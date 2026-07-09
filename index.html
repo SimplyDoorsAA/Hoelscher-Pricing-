@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Quoting & BOM Estimator Suite</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-section: #0b1325;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 2rem;
+            line-height: 1.5;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .header-title h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .badge {
+            background-color: #1e3a8a;
+            color: #bfdbfe;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid #3b82f6;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+        .toggle-container:hover {
+            border-color: var(--text-muted);
+        }
+        .toggle-container label {
+            font-size: 0.85rem;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+        }
+        input[type="checkbox"] {
+            cursor: pointer;
+            width: 1.1rem;
+            height: 1.1rem;
+            accent-color: var(--accent);
+        }
+        main {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 2rem;
+            align-items: start;
+        }
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        .card h2 {
+            font-size: 1.15rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        .form-section {
+            background-color: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        .form-section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 0.7rem 0.8rem;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        select:focus, input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        select:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: rgba(51, 65, 85, 0.3);
+        }
+        .search-feedback {
+            font-size: 0.8rem;
+            margin-top: 0.35rem;
+            min-height: 1.2em;
+            font-weight: 500;
+        }
+        .search-feedback.success { color: var(--success); }
+        .search-feedback.error { color: var(--error); }
+        
+        .notice-box {
+            grid-column: span 2;
+            background-color: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-left: 4px solid var(--warning);
+            padding: 0.85rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #fcd34d;
+            margin-bottom: 0.5rem;
+        }
+        .summary-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .line-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1rem;
+            background-color: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+        .line-item.pricing-tbd {
+            border-color: rgba(245, 158, 11, 0.5);
+            background-color: rgba(245, 158, 11, 0.05);
+        }
+        .line-item:hover {
+            border-color: var(--border);
+        }
+        .item-details h4 {
+            font-size: 1rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+        .item-details p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            line-height: 1.4;
+        }
+        .item-price {
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-align: right;
+            color: var(--text-main);
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+        .price-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: block;
+            font-weight: 500;
+            margin-top: 0.2rem;
+        }
+        .total-section {
+            margin-top: 1.5rem;
+            border-top: 2px solid var(--border);
+            padding-top: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.05rem;
+            color: var(--text-muted);
+        }
+        .total-row span:last-child {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+        .grand-total-box {
+            margin-top: 0.5rem;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.4));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .grand-total-box span:first-child {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .grand-total-box span:last-child {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-muted);
+        }
+        .btn-danger {
+            background-color: transparent;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            flex: 0.5;
+        }
+        .btn-danger:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: var(--error);
+        }
+        .hidden {
+            display: none !important;
+        }
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+                padding: 0;
+            }
+            .header-controls, .form-section, .btn-group, .toggle-container {
+                display: none;
+            }
+            header { 
+                border-bottom: 2px solid black; 
+                margin-bottom: 1rem;
+                padding-bottom: 0.5rem;
+            }
+            main {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                width: 100%;
+            }
+            .header-title h1 {
+                color: black;
+            }
+            .line-item {
+                background-color: transparent;
+                border: 1px solid #ccc;
+            }
+            .grand-total-box {
+                background: none;
+                border: 2px solid black;
+            }
+            .item-details h4, .item-details p, .item-price, .total-row, .grand-total-box span, .header-title p {
+                color: black !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <h1>SimplyDoors Quoting Suite</h1>
+            <p>Enterprise Estimator & BOM Generator &bull; Hoelscher 2026 Catalogs</p>
+        </div>
+        <div class="header-controls">
+            <span class="badge" id="testsPassedBadge">Net Mult: 0.48</span>
+            <div class="toggle-container">
+                <input type="checkbox" id="clientModeToggle">
+                <label for="clientModeToggle">Client Screen Share (Hide Net)</label>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="card">
+            <h2>
+                <span>1. Door Specification Wizard</span>
+                <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Step-by-Step Configuration</span>
+            </h2>
+            
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span>01. Catalog & Dimensions</span>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="skuSearch">Instant SKU / Description Search</label>
+                        <input type="text" id="skuSearch" placeholder="e.g., M1LVCLE3080 or 6 Panel Mahogany...">
+                        <div id="searchFeedback" class="search-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="materialSelect">Primary Material</label>
+                        <select id="materialSelect">
+                            <option value="fiberglass">Fiberglass (Smooth/Grain)</option>
+                            <option value="wood">Hardwood (2026 Catalog)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="collectionSelect">Collection Family</label>
+                        <select id="collectionSelect"></select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="sizeSelect">Nominal Size</label>
+                        <select id="sizeSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notice-box">
+                <strong>Manufacturing Note:</strong> All doors are manufactured 1/4" undersized in width and 3/4" undersized in height.
+            </div>
+
+            <div class="form-section" style="margin-top: 1.25rem;">
+                <div class="form-section-title">
+                    <span>02. Style, Glazing & Quantity</span>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="doorStyleSelect">Base Door Style</label>
+                        <select id="doorStyleSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="glassSelect">Glass Type</label>
+                        <select id="glassSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="qtyInput">Quantity (Units)</label>
+                        <input type="number" id="qtyInput" value="1" min="1" step="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="finishSelect">Finish Type</label>
+                        <select id="finishSelect">
+                            <option value="unfinished">Unfinished (Raw/Primed)</option>
+                            <option value="prefinished">Pre-Finished</option>
+                        </select>
+                    </div>
+                    <div class="form-group hidden" id="stainGroup">
+                        <label for="stainSelect">Stain Color</label>
+                        <select id="stainSelect">
+                            <option value="Midnight">Midnight</option>
+                            <option value="Slate">Slate</option>
+                            <option value="Bourbon">Bourbon</option>
+                            <option value="Fox">Fox</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section" style="margin-bottom: 0;">
+                <div class="form-section-title">
+                    <span>03. Prehung System & Margin Rules</span>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="frameSelect">Frame / Prehung Package</label>
+                        <select id="frameSelect">
+                            <option value="none">Slab Only (No Frame)</option>
+                            <option value="prehung_single">Prehung Single Door Kit</option>
+                            <option value="prehung_double">Prehung Double Door Kit (2x Slabs Required)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="jambSelect">Jamb Size</label>
+                        <select id="jambSelect" disabled>
+                            <option value="4_9_16">4-9/16" Jamb Depth</option>
+                            <option value="6_9_16">6-9/16" Jamb Depth (+Cost)</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width" style="margin-top: 0.5rem;">
+                        <label for="marginInput">Target Margin (%)</label>
+                        <input type="number" id="marginInput" value="30" step="1" min="0" max="99">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column;">
+            <h2>
+                <span>2. Quote Summary & BOM</span>
+                <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);" id="quoteDateDisplay"></span>
+            </h2>
+            <div class="summary-box" id="lineItemsContainer"></div>
+            <div class="total-section">
+                <div class="total-row net-cost-row" id="netCostContainer">
+                    <span>Total Net Wholesale Cost (0.48):</span>
+                    <span id="totalNetDisplay">$0.00</span>
+                </div>
+                <div class="total-row">
+                    <span>Total List Price:</span>
+                    <span id="totalListDisplay">$0.00</span>
+                </div>
+                
+                <div class="grand-total-box">
+                    <span>Customer Quote Total:</span>
+                    <span id="grandTotalDisplay">$0.00</span>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-danger" id="resetBtn" title="Reset Quote">
+                        Reset
+                    </button>
+                    <button class="btn-secondary" onclick="window.print()">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+                        Print BOM
+                    </button>
+                    <button class="btn-primary" id="copyQuoteBtn">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                        Copy Quote
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // RAW CATALOG IMPORT (From 2025 PDF - Fiberglass Collection)
+        const rawFiberglassTSV = `FG1LVCLE3080|3080 Contemporary 1 Lite Vertical - Mahogany Grain|Clear Low E|4|1728|2337
+FG1LVSN3080|3080 Contemporary 1 Lite Vertical - Mahogany Grain|Satin|4|1728|2337
+FG1LVSB3080|3080 Contemporary 1 Lite Vertical - Mahogany Grain|Sandblast|4|1728|2337
+FG1LVR3080|3080 Contemporary 1 Lite Vertical - Mahogany Grain|Reeded|4|1728|2337
+FG3GPWCLE3068|3068 Contemporary 3 Lite - Mahogany Grain|Clear Low E|4|1485|2008
+FG3GPWSN3068|3068 Contemporary 3 Lite - Mahogany Grain|Satin|4|1485|2008
+FG3GPWRN3068|3068 Contemporary 3 Lite - Mahogany Grain|Rain|4|1485|2008
+FG3GPWR3068|3068 Contemporary 3 Lite - Mahogany Grain|Reeded|4|1485|2008
+FG3GPWCLE3080|3080 Contemporary 3 Lite - Mahogany Grain|Clear Low E|4|1728|2337
+FG3GPWSN3080|3080 Contemporary 3 Lite - Mahogany Grain|Satin|4|1728|2337
+FG3GPWRN3080|3080 Contemporary 3 Lite - Mahogany Grain|Rain|4|1728|2337
+FG3GPWR3080|3080 Contemporary 3 Lite - Mahogany Grain|Reeded|4|1728|2337
+FG3GPWF3080|3080 Contemporary 3 Lite - Mahogany Grain|Flemish|4|1728|2337
+FG4GPWCLE3068|3068 Contemporary 4 Lite - Mahogany Grain|Clear Low E|5|1485|2008
+FG4GPWSB3068|3068 Contemporary 4 Lite - Mahogany Grain|Sandblast|5|1485|2008
+FG4GPWSN3068|3068 Contemporary 4 Lite - Mahogany Grain|Satin|5|1485|2008
+FG4GPWRN3068|3068 Contemporary 4 Lite - Mahogany Grain|Rain|5|1485|2008
+FG4GPWR3068|3068 Contemporary 4 Lite - Mahogany Grain|Reeded|5|1485|2008
+FG5GPWCLE3080|3080 Contemporary 5 Lite - Mahogany Grain|Clear Low E|5|1728|2337
+FG5GPWSN3080|3080 Contemporary 5 Lite - Mahogany Grain|Satin|5|1728|2337
+FG5GPWSB3080|3080 Contemporary 5 Lite - Mahogany Grain|Sandblast|5|1728|2337
+FG5GPWRN3080|3080 Contemporary 5 Lite - Mahogany Grain|Rain|5|1728|2337
+FG5GPWF3080|3080 Contemporary 5 Lite - Mahogany Grain|Flemish|5|1728|2337
+FG5GPWR3080|3080 Contemporary 5 Lite - Mahogany Grain|Reeded|5|1728|2337
+FG5GPWCLE3680|3680 Contemporary 5 Lite - Mahogany Grain|Clear Low E|5|1938|2633
+FG5GPWSN3680|3680 Contemporary 5 Lite - Mahogany Grain|Satin|5|1938|2633
+FG5GPWSB3680|3680 Contemporary 5 Lite - Mahogany Grain|Sandblast|5|1938|2633
+FG5GPWRN3680|3680 Contemporary 5 Lite - Mahogany Grain|Rain|5|1938|2633
+FG5GPWF3680|3680 Contemporary 5 Lite - Mahogany Grain|Flemish|5|1938|2633
+FG5GPWR3680|3680 Contemporary 5 Lite - Mahogany Grain|Reeded|5|1938|2633
+FG5HGCLE3068|3068 Contemporary 5 Lite Horizontal - Mahogany Grain|Clear Low E|6|1485|2008
+FG5HGSN3068|3068 Contemporary 5 Lite Horizontal - Mahogany Grain|Satin|6|1485|2008
+FG5HGRN3068|3068 Contemporary 5 Lite Horizontal - Mahogany Grain|Rain|6|1485|2008
+FG5HGSB3068|3068 Contemporary 5 Lite Horizontal - Mahogany Grain|Sandblast|6|1485|2008
+FG6HGCLE3080|3080 Contemporary 6 lite Horiztonal - Mahogany Grain|Clear Low E|6|1728|2337
+FG6HGSN3080|3080 Contemporary 6 lite Horiztonal - Mahogany Grain|Satin|6|1728|2337
+FG6HGRN3080|3080 Contemporary 6 lite Horiztonal - Mahogany Grain|Rain|6|1728|2337
+FG6HGSB3080|3080 Contemporary 6 lite Horiztonal - Mahogany Grain|Sandblast|6|1728|2337
+FG34LE1P3068|3068 3/4 Lite 1 Panel - Mahogany Grain|Clear Low E|7|1165|1685
+FG34SN1P3068|3068 3/4 Lite 1 Panel - Mahogany Grain|Satin|7|1165|1685
+FG34RN1P3068|3068 3/4 Lite 1 Panel - Mahogany Grain|Rain|7|1165|1685
+FG34FL1P3068|3068 3/4 Lite 1 Panel - Mahogany Grain|Flemish|7|1165|1685
+FG34LE1P3080|3080 3/4 Lite 1 Panel - Mahogany Grain|Clear Low E|7|1370|1976
+FG4L1PCBLE2668|2668 4 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
+FG4L1PLE2680|2680 4 Lite TDL 1 Panel - Mahogany Grain|Clear Low E|8|1534|2140
+FG4L1PCBLE2868|2868 4 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
+FG4L1PCBLE3068|3068 4 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
+FG6L1PCBLE2668|2668 6 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
+FG6L1PCBLE3068|3068 6 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
+FGKTX6P3068|3068 6 Panel - Oak Grain|N/A|9|440|963
+FGKTX6P3080|3080 6 Panel - Oak Grain|N/A|9|856|1193
+FG2PSQS3068|3068 2 Panel Square - Mahogany Grain|N/A|9|630|1136
+FG2PSQS3080|3080 2 Panel Square - Mahogany Grain|N/A|9|856|1449
+FG2PAVG3068|3068 2 Panel Arch V-Grooved - Mahogany Grain|N/A|10|630|1136
+FG2PAVG3080|3080 2 Panel Arch V-Grooved - Mahogany Grain|N/A|10|856|1449
+FGCMCBLE3068|3068 Craftsman 6 Lite 2 Panel Shaker - Mahogany Grain|Clear Bevel Low E|10|1252|1877
+FGCMRN3068|3068 Craftsman 6 Lite 2 Panel Shaker - Mahogany Grain|Rain|10|1252|1877
+FGCMF3068|3068 Craftsman 6 Lite 2 Panel Shaker - Mahogany Grain|Flemish|10|1252|1877
+FGCMCBLE3080|3080 Craftsman 6 Lite 2 Panel Shaker - Mahogany Grain|Clear Bevel Low E|10|1615|2387
+FG1CSLLE1268|1268 Contemporary Full Lite Sidelite - Mahogany Grain|Clear Low E|12|725|966
+FGSH3PCMBPSM3068NP|3068 Craftsman 3 Panel Shaker - Smooth|N/A|14|403|null
+FGSHCMLESM3068NP|3068 Craftsman 1 Lite 2 Panel Shaker - Smooth|Clear Low E|14|600|null
+NLFGTCMLESM3068NP|3068 Craftsman Flat Panel - Smooth|Clear Low E|15|610|null
+FGSH2PSQSM3068NP|3068 2 Panel Shaker - Smooth|N/A|16|630|null
+NL2PSQSM2868NP|2868 2 Panel Raised Panel - Smooth|N/A|16|339|null
+FG2PSQSM3068NP|3068 2 Panel Raised Panel - Smooth|N/A|16|630|null
+NLSH1PBSM3068NP|3068 1 Panel Flat Panel - White Brushed Smooth / Smooth|N/A|17|608|null
+NLSM6P2868NB|2868 6 Panel - Smooth|N/A|17|339|null
+NLSM6P3068NB|3068 6 Panel - Smooth|N/A|17|370|null
+NLFGFULLLE2068NB|2068 Full Lite - White Brushed Smooth|Clear Low E|18|608|null
+NLFGFULLLE2668NB|2668 Full Lite - White Brushed Smooth|Clear Low E|18|608|null
+NLFGFULLLE3068NB|3068 Full Lite - White Brushed Smooth|Clear Low E|18|608|null
+NLFGFULLLEMBR2068NB|2068 Full Lite with Mini Blind - White Brushed Smooth|Clear Low E|18|923|null
+NLFG34LE2668NB|2668 3/4 Lite 1 Panel - White Brushed Smooth|Clear Low E|19|685|null
+NLFG34LE3068NB|3068 3/4 Lite 1 Panel - White Brushed Smooth|Clear Low E|19|685|null
+NLSMFL2068NB|2068 Flush - Smooth Skin|N/A|19|370|null
+NLFG34SLLE1068|1068 3/4 Lite 1 Panel Sidelite - White Brushed Smooth|Clear Low E|20|581|null
+NLFGFULLSLLE1068|1068 Full Lite Sidelite - White Brushed Smooth|Clear Low E|20|573|null`;
+
+        const generatedFiberglassItems = rawFiberglassTSV.trim().split('\n').map(line => {
+            const [sku, desc, glass, page, unfinStr, prefinStr] = line.split('|');
+            const sizeMatch = sku.match(/\d{4,5}/);
+            const size = sizeMatch ? sizeMatch[0] : (desc.match(/^\d{4,5}/) ? desc.match(/^\d{4,5}/)[0] : "");
+            return {
+                sku: sku.trim(), size: size.trim(), desc: desc.trim(), glass: glass.trim(),
+                page: page.trim(),
+                unfin: unfinStr.trim() === "null" ? null : parseInt(unfinStr.trim(), 10),
+                prefin: prefinStr.trim() === "null" ? null : parseInt(prefinStr.trim(), 10)
+            };
+        });
+
+        // RAW CATALOG IMPORT (From 2026 Hardwood Catalog PDF)
+        const rawHardwoodTSV = `M1LVCLE3080|3080 Contemporary 1 Lite Vertical|Clear Low E|8|mahogany
+M1LVCLE3680|3680 Contemporary 1 Lite Vertical|Clear Low E|8|mahogany
+M3GPWCLE3068|3068 Contemporary 3 Lite|Clear Low E|8|mahogany
+M3GPWCLE2880|2880 Contemporary 3 Lite|Clear Low E|8|mahogany
+M3GPWCLE3080|3080 Contemporary 3 Lite|Clear Low E|8|mahogany
+M3GPWCLE3680|3680 Contemporary 3 Lite|Clear Low E|8|mahogany
+M4GPWCLE3068|3068 Contemporary 4 Lite|Clear Low E|8|mahogany
+M5GPWCLE2880|2880 Contemporary 5 Lite|Clear Low E|8|mahogany
+M5GPWCLE3080|3080 Contemporary 5 Lite|Clear Low E|8|mahogany
+M5GPWCLE3680|3680 Contemporary 5 Lite|Clear Low E|8|mahogany
+M5HGC3068|3068 Contemporary 5 Lite Horizontal|Clear Low E|9|mahogany
+M6HGC3080|3080 Contemporary 6 Lite Horizontal|Clear Low E|9|mahogany
+M7P3080|3080 Contemporary 7 Panel|None|9|mahogany
+M7P3680|3680 Contemporary 7 Panel|None|9|mahogany
+M1LCSLCLE1268|1268 Contemporary Full Lite Sidelite|Clear Low E|9|mahogany
+M3GPWNSR2880L|2880 Contemporary 3 Lite Narrow (L)|Reeded|10|mahogany
+M3GPWNSR3080L|3080 Contemporary 3 Lite Narrow (L)|Reeded|10|mahogany
+M4GPWNSR3080L|3080 Contemporary 4 Lite Narrow (L)|Reeded|10|mahogany
+M5GPWNSR3080L|3080 Contemporary 5 Lite Narrow (L)|Reeded|11|mahogany
+M3LCTLCLE1P3080|3080 3 Lite Circle Lite RM|Clear Low E|14|tdl
+M3LSQTLCLE1P3080|3080 3 Lite 1 Panel RM|Clear Low E|14|tdl
+M4LAT5080|5080 4 Lite Arch Top Double RM|Clear Bevel Low E|14|tdl
+M4L1P2668|2668 4 Lite 1 Panel RM|Clear Bevel Low E|15|tdl
+M4L1P2868|2868 4 Lite 1 Panel RM|Clear Bevel Low E|15|tdl
+M4L1P3068|3068 4 Lite 1 Panel RM|Clear Bevel Low E|15|tdl
+M4L1P2668NRM|2668 4 Lite 1 Panel NRM|Clear Bevel Low E|15|tdl
+M4L1P3068NRM|3068 4 Lite 1 Panel NRM|Clear Bevel Low E|15|tdl
+M4L1P3080NRM|3080 4 Lite 1 Panel NRM|Clear Bevel Low E|15|tdl
+M6L1P3068|3068 6 Lite 1 Panel RM|Clear Bevel Low E|17|tdl
+M6L1P3080|3080 6 Lite 1 Panel RM|Clear Bevel Low E|17|tdl
+M6L1P3068NRM|3068 6 Lite 1 Panel NRM|Clear Bevel Low E|17|tdl
+M6LAT3080|3080 6 Lite Arch Top RM|Clear Bevel Low E|16|tdl
+MCM4LCBLE3080S|3080 Craftsman 4 Lite|Clear Bevel Low E|18|tdl
+MCMCBLE3068|3068 Craftsman 6 Lite|Clear Bevel Low E|19|tdl
+MCMCBLE3080|3080 Craftsman 6 Lite|Clear Bevel Low E|19|tdl
+M9LM3068|3068 Marginal 9 Lite|Clear Bevel Low E|20|tdl
+M6P3068|3068 6 Panel NRM|None|24|mahogany
+M6PRM3068|3068 6 Panel RM|None|24|mahogany
+M6PRM3080|3080 6 Panel RM|None|24|mahogany
+MPIP3068|3068 Panel In Panel RM|None|24|mahogany
+MCA3068|3068 Center Arch RM|None|24|mahogany
+M2PSQS3080|3080 2 Panel Square Smooth|None|25|mahogany
+M2PA3068|3068 2 Panel Arch V-Grooved|None|26|mahogany
+M2PA3080|3080 2 Panel Arch V-Grooved|None|26|mahogany
+M2PASEC3068|3068 2 Panel Arch V-Grooved Speakeasy|Clear IG|26|mahogany
+MFULLPECP3068|3068 Full Lite RM - Pecos|Pecos|28|mahogany
+MFULLF3068|3068 Full Lite RM - Flat Glass|Open|28|mahogany
+M343068|3068 3/4 Lite RM|Open|29|mahogany
+M233068|3068 2/3 Lite RM|Open|30|mahogany
+M23A3068|3068 2/3 Arch Lite RM|Open|31|mahogany
+M23ACRDC3068|3068 2/3 Arch Lite Iron Grille - Cordoba|Clear Low E|35|mahogany
+M23AWHIC3068|3068 2/3 Arch Lite Iron Grille - Whitney|Clear Low E|35|mahogany
+M34AVIC3068|3068 3/4 Lite Iron Grille - Avignon|Clear Low E|38|mahogany
+M34BARC3068|3068 3/4 Lite Iron Grille - Barcelona|Clear Low E|38|mahogany
+M34CRDC3068|3068 3/4 Lite Iron Grille - Cordoba|Clear Low E|38|mahogany
+M34STGC3068|3068 3/4 Lite Iron Grille - Santiago|Clear Low E|39|mahogany
+M34SIEC3068|3068 3/4 Lite Iron Grille - Sienna|Clear Low E|39|mahogany
+M34WHIC3068|3068 3/4 Lite Iron Grille - Whitney|Clear Low E|39|mahogany
+MFULLAVIC3068|3068 Full Lite Iron Grille - Avignon|Clear Low E|40|mahogany
+MFULLCRDC3068|3068 Full Lite Iron Grille - Cordoba|Clear Low E|40|mahogany
+KA6L1P3068|3068 6 Lite 1 Panel RM (Alder)|Clear Bevel Low E|42|knotty_alder
+KA2PA3068|3068 2 Panel Arch V-Grooved (Alder)|None|46|knotty_alder
+KA2PA3080|3080 2 Panel Arch V-Grooved (Alder)|None|46|knotty_alder
+KACMCBLE3068|3068 Craftsman 6 Lite (Alder)|Clear Bevel Low E|45|knotty_alder
+BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
+
+        const parsedHardwood = { mahogany: [], tdl: [], knotty_alder: [], barn_door: [], contemporary_wood: [] };
+        
+        rawHardwoodTSV.trim().split('\n').forEach(line => {
+            const [sku, desc, glass, page, cat] = line.split('|');
+            const sizeMatch = sku.match(/\d{4,5}/);
+            const size = sizeMatch ? sizeMatch[0] : (desc.match(/^\d{4,5}/) ? desc.match(/^\d{4,5}/)[0] : "");
+            
+            // Hardwood Pricing typically TBD without a price book, setting to 0 to trigger amber warning
+            if(parsedHardwood[cat]) {
+                parsedHardwood[cat].push({
+                    sku: sku.trim(), size: size.trim(), desc: desc.trim(), glass: glass.trim(), page: page.trim(), unfin: 0, prefin: 0
+                });
+            }
+        });
+
+        const VENDOR_CATALOG = {
+            metadata: {
+                effectiveDate: "2026-06-01",
+                netMultiplier: 0.48,
+                vendorName: "Hoelscher Weatherstrip / Hoelscher Doors"
+            },
+            collections: {
+                fiberglass: { name: "Fiberglass Collection (Smooth/Grain)", items: generatedFiberglassItems },
+                mahogany: { name: "Wood Mahogany Legacy & Panel", items: parsedHardwood.mahogany },
+                tdl: { name: "True Divided Lite Collection (Wood)", items: parsedHardwood.tdl },
+                knotty_alder: { name: "Wood Knotty Alder Collection", items: parsedHardwood.knotty_alder },
+                contemporary_wood: { name: "Contemporary Wood Collection", items: parsedHardwood.contemporary_wood },
+                barn_door: { name: "Barn Door Collection", items: parsedHardwood.barn_door }
+            },
+            prehungComponents: {
+                prehung_single: { name: "Prehung Single Door Kit", listPrice: 656, jambUpcharge6916: 63 },
+                prehung_double: { name: "Prehung Double Door Kit", listPrice: 846, jambUpcharge6916: 63 }
+            }
+        };
+
+        const materialMap = {
+            fiberglass: ['fiberglass'],
+            wood: ['mahogany', 'tdl', 'knotty_alder', 'contemporary_wood', 'barn_door']
+        };
+
+        const skuSearch = document.getElementById('skuSearch');
+        const searchFeedback = document.getElementById('searchFeedback');
+        const materialSelect = document.getElementById('materialSelect');
+        const collectionSelect = document.getElementById('collectionSelect');
+        const sizeSelect = document.getElementById('sizeSelect');
+        const doorStyleSelect = document.getElementById('doorStyleSelect');
+        const glassSelect = document.getElementById('glassSelect');
+        const finishSelect = document.getElementById('finishSelect');
+        const stainGroup = document.getElementById('stainGroup');
+        const stainSelect = document.getElementById('stainSelect');
+        const qtyInput = document.getElementById('qtyInput');
+        const marginInput = document.getElementById('marginInput');
+        const frameSelect = document.getElementById('frameSelect');
+        const jambSelect = document.getElementById('jambSelect');
+        const clientModeToggle = document.getElementById('clientModeToggle');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        const lineItemsContainer = document.getElementById('lineItemsContainer');
+        const totalNetDisplay = document.getElementById('totalNetDisplay');
+        const totalListDisplay = document.getElementById('totalListDisplay');
+        const grandTotalDisplay = document.getElementById('grandTotalDisplay');
+        const netCostContainer = document.getElementById('netCostContainer');
+        const copyQuoteBtn = document.getElementById('copyQuoteBtn');
+
+        document.getElementById('quoteDateDisplay').innerText = `Date: ${new Date().toLocaleDateString()}`;
+
+        let currentCollection = 'fiberglass';
+        let currentSize = '';
+        let selectedItem = null;
+        let searchTimeout = null;
+
+        function formatCurrency(val) {
+            return val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        }
+
+        function initApp() {
+            populateCollections();
+            
+            materialSelect.addEventListener('change', () => {
+                populateCollections();
+            });
+
+            collectionSelect.addEventListener('change', (e) => {
+                currentCollection = e.target.value;
+                populateSizes();
+            });
+
+            sizeSelect.addEventListener('change', (e) => {
+                currentSize = e.target.value;
+                populateDoors();
+            });
+
+            doorStyleSelect.addEventListener('change', () => {
+                populateGlassOptions();
+            });
+            
+            glassSelect.addEventListener('change', handleGlassSelection);
+            
+            finishSelect.addEventListener('change', handleFinishChange);
+            stainSelect.addEventListener('change', calculateAndRenderQuote);
+            
+            qtyInput.addEventListener('input', calculateAndRenderQuote);
+            marginInput.addEventListener('input', calculateAndRenderQuote);
+            
+            frameSelect.addEventListener('change', (e) => {
+                jambSelect.disabled = (e.target.value === 'none');
+                calculateAndRenderQuote();
+            });
+            
+            jambSelect.addEventListener('change', calculateAndRenderQuote);
+            clientModeToggle.addEventListener('change', toggleClientMode);
+            
+            resetBtn.addEventListener('click', resetQuoteForm);
+
+            skuSearch.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => handleSkuSearch(e.target.value), 300);
+            });
+        }
+
+        function populateCollections() {
+            const mat = materialSelect.value;
+            // Only populate categories that actually have items loaded
+            const cols = materialMap[mat].filter(c => VENDOR_CATALOG.collections[c].items.length > 0);
+            
+            collectionSelect.innerHTML = cols.map(c => `<option value="${c}">${VENDOR_CATALOG.collections[c].name}</option>`).join('');
+            currentCollection = cols[0];
+            populateSizes();
+        }
+
+        function resetQuoteForm() {
+            skuSearch.value = '';
+            searchFeedback.className = 'search-feedback';
+            searchFeedback.innerText = '';
+            materialSelect.value = 'fiberglass';
+            populateCollections();
+            qtyInput.value = 1;
+            marginInput.value = 30;
+            frameSelect.value = 'prehung_single';
+            jambSelect.disabled = false;
+            jambSelect.value = '4_9_16';
+            finishSelect.value = 'unfinished';
+            handleFinishChange();
+        }
+
+        function populateSizes() {
+            const items = VENDOR_CATALOG.collections[currentCollection].items;
+            const sizes = [...new Set(items.map(item => item.size))].sort((a,b) => parseInt(a) - parseInt(b));
+            
+            if (sizes.length === 0) {
+                sizeSelect.innerHTML = `<option value="">No Sizes Available</option>`;
+                currentSize = '';
+            } else {
+                sizeSelect.innerHTML = sizes.map(s => `<option value="${s}">${s} Nominal</option>`).join('');
+                if (sizes.includes(currentSize)) {
+                    sizeSelect.value = currentSize;
+                } else {
+                    currentSize = sizes[0];
+                    sizeSelect.value = currentSize;
+                }
+            }
+            populateDoors();
+        }
+
+        function populateDoors() {
+            const items = VENDOR_CATALOG.collections[currentCollection].items
+                .filter(item => item.size === currentSize);
+
+            // Extract unique base styles for the first dropdown
+            const uniqueStyles = [...new Set(items.map(item => item.desc))];
+
+            if (uniqueStyles.length === 0) {
+                doorStyleSelect.innerHTML = `<option value="">No items available</option>`;
+                glassSelect.innerHTML = `<option value="">N/A</option>`;
+                selectedItem = null;
+            } else {
+                doorStyleSelect.innerHTML = uniqueStyles.map(desc => {
+                    const firstMatch = items.find(i => i.desc === desc);
+                    return `<option value="${desc}">[Pg ${firstMatch.page || 'N/A'}] ${desc}</option>`;
+                }).join('');
+                
+                const existingStyle = selectedItem ? selectedItem.desc : null;
+                if (uniqueStyles.includes(existingStyle)) {
+                    doorStyleSelect.value = existingStyle;
+                } else {
+                    doorStyleSelect.value = uniqueStyles[0];
+                }
+            }
+            populateGlassOptions();
+        }
+        
+        function populateGlassOptions() {
+            const currentStyle = doorStyleSelect.value;
+            const items = VENDOR_CATALOG.collections[currentCollection].items
+                .filter(item => item.size === currentSize && item.desc === currentStyle);
+                
+            if (items.length === 0) {
+                glassSelect.innerHTML = `<option value="">N/A</option>`;
+                selectedItem = null;
+            } else {
+                glassSelect.innerHTML = items.map(item => 
+                    `<option value="${item.glass}">${item.glass}</option>`
+                ).join('');
+                
+                const existingGlass = selectedItem ? selectedItem.glass : null;
+                const foundExisting = items.find(i => i.glass === existingGlass);
+                
+                if (foundExisting) {
+                    glassSelect.value = existingGlass;
+                    selectedItem = foundExisting;
+                } else {
+                    glassSelect.value = items[0].glass;
+                    selectedItem = items[0];
+                }
+            }
+            updateFinishOptions();
+            calculateAndRenderQuote();
+        }
+
+        function handleGlassSelection(e) {
+            const glass = e.target.value;
+            const currentStyle = doorStyleSelect.value;
+            const items = VENDOR_CATALOG.collections[currentCollection].items;
+            selectedItem = items.find(i => i.desc === currentStyle && i.glass === glass && i.size === currentSize);
+            updateFinishOptions();
+            calculateAndRenderQuote();
+        }
+        
+        function handleFinishChange() {
+            if (finishSelect.value === 'prefinished') {
+                stainGroup.classList.remove('hidden');
+            } else {
+                stainGroup.classList.add('hidden');
+            }
+            calculateAndRenderQuote();
+        }
+
+        function updateFinishOptions() {
+            if (!selectedItem) return;
+            
+            const unfinOption = finishSelect.querySelector('option[value="unfinished"]');
+            const prefinOption = finishSelect.querySelector('option[value="prefinished"]');
+            
+            if (selectedItem.unfin === null && selectedItem.unfin !== 0) {
+                unfinOption.disabled = true;
+                unfinOption.innerText = "Unfinished (N/A)";
+                if (finishSelect.value === "unfinished") {
+                    finishSelect.value = "prefinished";
+                    handleFinishChange();
+                }
+            } else {
+                unfinOption.disabled = false;
+                unfinOption.innerText = "Unfinished (Raw/Primed)";
+            }
+
+            if (selectedItem.prefin === null) {
+                prefinOption.disabled = true;
+                prefinOption.innerText = "Pre-Finished (N/A)";
+                if (finishSelect.value === "prefinished") {
+                    finishSelect.value = "unfinished";
+                    handleFinishChange();
+                }
+            } else {
+                prefinOption.disabled = false;
+                prefinOption.innerText = "Pre-Finished";
+            }
+        }
+
+        function handleSkuSearch(queryText) {
+            const query = queryText.trim().toUpperCase();
+            searchFeedback.className = 'search-feedback';
+            searchFeedback.innerText = '';
+
+            if (query.length < 3) return;
+
+            let exactMatches = [];
+            let partialMatches = [];
+
+            // Prevent array.find logic so exact matches are prioritized
+            for (const [colKey, colData] of Object.entries(VENDOR_CATALOG.collections)) {
+                colData.items.forEach(item => {
+                    if (item.sku.toUpperCase() === query) {
+                        exactMatches.push({ item, colKey });
+                    } else if (item.sku.toUpperCase().includes(query) || item.desc.toUpperCase().includes(query)) {
+                        partialMatches.push({ item, colKey });
+                    }
+                });
+            }
+
+            let found = null;
+            let foundColKey = '';
+
+            if (exactMatches.length > 0) {
+                found = exactMatches[0].item;
+                foundColKey = exactMatches[0].colKey;
+            } else if (partialMatches.length > 0) {
+                found = partialMatches[0].item;
+                foundColKey = partialMatches[0].colKey;
+            }
+
+            if (found) {
+                searchFeedback.className = 'search-feedback success';
+                searchFeedback.innerText = `✓ Match Found: [Pg ${found.page || 'N/A'}] [${found.sku}] in ${VENDOR_CATALOG.collections[foundColKey].name}`;
+                
+                let foundMat = 'fiberglass';
+                if (materialMap.wood.includes(foundColKey)) foundMat = 'wood';
+                
+                if(materialSelect.value !== foundMat) {
+                    materialSelect.value = foundMat;
+                    const cols = materialMap[foundMat].filter(c => VENDOR_CATALOG.collections[c].items.length > 0);
+                    collectionSelect.innerHTML = cols.map(c => `<option value="${c}">${VENDOR_CATALOG.collections[c].name}</option>`).join('');
+                }
+                
+                currentCollection = foundColKey;
+                collectionSelect.value = foundColKey;
+                
+                currentSize = found.size;
+                populateSizes(); // sets up doorStyleSelect
+                
+                selectedItem = found;
+                doorStyleSelect.value = found.desc;
+                
+                populateGlassOptions(); // sets up glassSelect based on desc
+                glassSelect.value = found.glass;
+                
+                updateFinishOptions();
+                calculateAndRenderQuote();
+            } else {
+                searchFeedback.className = 'search-feedback error';
+                searchFeedback.innerText = `No catalog match found for "${queryText}"`;
+            }
+        }
+
+        function toggleClientMode() {
+            if (clientModeToggle.checked) {
+                netCostContainer.classList.add('hidden');
+            } else {
+                netCostContainer.classList.remove('hidden');
+            }
+        }
+
+        function calculateAndRenderQuote() {
+            if (!selectedItem) {
+                lineItemsContainer.innerHTML = `<p style="color:var(--text-muted);">Please select a valid door configuration.</p>`;
+                totalNetDisplay.innerText = "$0.00";
+                totalListDisplay.innerText = "$0.00";
+                grandTotalDisplay.innerText = "$0.00";
+                return;
+            }
+
+            const finishType = finishSelect.value;
+            let finishLabel = finishType === 'prefinished' ? 'Pre-Finished' : 'Unfinished';
+            if (finishType === 'prefinished') {
+                finishLabel += ` (${stainSelect.value})`;
+            }
+
+            const listPrice = (finishType === 'prefinished' && selectedItem.prefin !== null) 
+                ? selectedItem.prefin 
+                : selectedItem.unfin;
+
+            const isTBD = (listPrice === 0 || listPrice === null);
+            const qty = Math.max(1, parseInt(qtyInput.value) || 1);
+            const netMultiplier = VENDOR_CATALOG.metadata.netMultiplier;
+            
+            // True Margin Calculation: Retail = Cost / (1 - Margin)
+            const targetMargin = Math.max(0, Math.min(99, parseFloat(marginInput.value) || 30)) / 100;
+            const frameSelection = frameSelect.value;
+
+            const slabMultiplier = (frameSelection === 'prehung_double') ? 2 : 1;
+            const slabQty = qty * slabMultiplier;
+
+            const unitNet = (listPrice || 0) * netMultiplier;
+            // Execute gross margin logic here
+            const unitRetail = unitNet / (1 - targetMargin);
+            
+            const extList = (listPrice || 0) * slabQty;
+            const extNet = unitNet * slabQty;
+            const extRetail = unitRetail * slabQty;
+
+            let itemsHtml = `
+                <div class="line-item ${isTBD ? 'pricing-tbd' : ''}">
+                    <div class="item-details">
+                        <h4>${slabQty}x ${selectedItem.desc}</h4>
+                        <p><strong>SKU:</strong> ${selectedItem.sku} | <strong>Size:</strong> ${selectedItem.size} | <strong>Glass:</strong> ${selectedItem.glass} | <strong>Catalog Pg:</strong> ${selectedItem.page || 'N/A'}</p>
+                        <p><strong>Finish:</strong> ${finishLabel} | <strong>Unit Price:</strong> ${isTBD ? '<span style="color:var(--warning)">TBD (Check Price Book)</span>' : formatCurrency(unitRetail)}</p>
+                    </div>
+                    <div class="item-price">
+                        ${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(extRetail)}
+                        <span class="price-sub">Ext List: ${isTBD ? 'TBD' : formatCurrency(extList)}</span>
+                    </div>
+                </div>
+            `;
+
+            let totalList = extList;
+            let totalNet = extNet;
+            let totalRetail = extRetail;
+            let hasTBD = isTBD;
+
+            if (frameSelection !== 'none') {
+                const frameData = VENDOR_CATALOG.prehungComponents[frameSelection];
+                let frameUnitList = frameData.listPrice;
+                
+                let jambText = '4-9/16" Jamb Depth';
+                if (jambSelect.value === '6_9_16') {
+                    frameUnitList += frameData.jambUpcharge6916;
+                    jambText = '6-9/16" Jamb Depth (+Upcharge)';
+                }
+
+                const frameUnitNet = frameUnitList * netMultiplier;
+                const frameUnitRetail = frameUnitNet / (1 - targetMargin);
+                
+                const frameExtList = frameUnitList * qty;
+                const frameExtNet = frameUnitNet * qty;
+                const frameExtRetail = frameUnitRetail * qty;
+
+                totalList += frameExtList;
+                totalNet += frameExtNet;
+                totalRetail += frameExtRetail;
+
+                itemsHtml += `
+                    <div class="line-item">
+                        <div class="item-details">
+                            <h4>${qty}x ${frameData.name}</h4>
+                            <p><strong>Specification:</strong> Exterior Frame, WM180 Brickmould, Mill/Bronze Sill, Hinges & Weatherstrip</p>
+                            <p><strong>Jamb System:</strong> ${jambText} | <strong>Unit Price:</strong> ${formatCurrency(frameUnitRetail)}</p>
+                        </div>
+                        <div class="item-price">
+                            ${formatCurrency(frameExtRetail)}
+                            <span class="price-sub">Ext List: ${formatCurrency(frameExtList)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            lineItemsContainer.innerHTML = itemsHtml;
+            totalNetDisplay.innerHTML = hasTBD ? `<span style="color:var(--warning)">TBD + ${formatCurrency(totalNet)}</span>` : formatCurrency(totalNet);
+            totalListDisplay.innerHTML = hasTBD ? `<span style="color:var(--warning)">TBD + ${formatCurrency(totalList)}</span>` : formatCurrency(totalList);
+            grandTotalDisplay.innerHTML = hasTBD ? `<span style="color:var(--warning); font-size:1.1rem;">TBD + ${formatCurrency(totalRetail)}</span>` : formatCurrency(totalRetail);
+        }
+
+        copyQuoteBtn.addEventListener('click', () => {
+            if (!selectedItem) return;
+            const qty = Math.max(1, parseInt(qtyInput.value) || 1);
+            const slabMultiplier = (frameSelect.value === 'prehung_double') ? 2 : 1;
+            
+            let finishLabel = finishSelect.options[finishSelect.selectedIndex].text;
+            if (finishSelect.value === 'prefinished') {
+                finishLabel += ` (${stainSelect.value})`;
+            }
+
+            const textSummary = `SIMPLYDOORS QUOTE SUMMARY\n` +
+                `Date: ${new Date().toLocaleDateString()}\n` +
+                `----------------------------------------\n` +
+                `Quantity: ${qty} Prehung Unit(s) [Req. ${qty * slabMultiplier}x Slabs]\n` +
+                `Item: ${selectedItem.desc} (${selectedItem.sku})\n` +
+                `Size: ${selectedItem.size} Nominal | Glass: ${selectedItem.glass}\n` +
+                `Catalog Ref: Page ${selectedItem.page || 'N/A'}\n` +
+                `Finish: ${finishLabel}\n` +
+                `Frame System: ${frameSelect.options[frameSelect.selectedIndex].text}\n` +
+                `----------------------------------------\n` +
+                `TOTAL ESTIMATE: ${grandTotalDisplay.innerText}\n`;
+
+            navigator.clipboard.writeText(textSummary).then(() => {
+                const originalText = copyQuoteBtn.innerHTML;
+                copyQuoteBtn.innerHTML = `<span>Copied to Clipboard!</span>`;
+                setTimeout(() => { copyQuoteBtn.innerHTML = originalText; }, 2000);
+            });
+        });
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
