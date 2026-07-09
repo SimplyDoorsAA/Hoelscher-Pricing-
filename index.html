@@ -562,41 +562,65 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
                 lineItemsContainer.innerHTML = `<p style="color:var(--text-muted);">Please select a valid door configuration.</p>`;
                 totalNetDisplay.innerText = "$0.00"; totalListDisplay.innerText = "$0.00"; grandTotalDisplay.innerText = "$0.00"; return;
             }
+            
             const finishType = finishSelect.value;
             let finishLabel = finishType === 'prefinished' ? `Pre-Finished (${stainSelect.value})` : 'Unfinished';
+            
             const listPrice = (finishType === 'prefinished' && selectedItem.prefin !== null) ? selectedItem.prefin : selectedItem.unfin;
             const isTBD = (listPrice === 0 || listPrice === null);
+            
             const qty = Math.max(1, parseInt(qtyInput.value) || 1);
             const slabMultiplier = (frameSelect.value === 'prehung_double') ? 2 : 1;
             const slabQty = qty * slabMultiplier;
+            
             const netMult = VENDOR_CATALOG.metadata.netMultiplier;
             const margin = Math.max(0, Math.min(99, parseFloat(marginInput.value) || 30)) / 100;
+            
+            // Execute correct Net & Margin calculations
             const unitNet = (listPrice || 0) * netMult;
             const unitRetail = unitNet / (1 - margin);
             const extList = (listPrice || 0) * slabQty;
+            const extNet = unitNet * slabQty;
             const extRetail = unitRetail * slabQty;
 
             let itemsHtml = `<div class="line-item ${isTBD ? 'pricing-tbd' : ''}">
                 <div class="item-details">
                     <h4>${slabQty} x ${selectedItem.desc}</h4>
                     <p><strong>SKU:</strong> ${selectedItem.sku} | <strong>Size:</strong> ${selectedItem.size} | <strong>Glass:</strong> ${selectedItem.glass}</p>
-                    <p><strong>Finish:</strong> ${finishLabel} | <strong>Unit Price:</strong> ${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(unitRetail)}</p>
+                    <p><strong>Finish:</strong> ${finishLabel}</p>
+                    <p style="margin-top:0.5rem; color:var(--success);"><strong>Net Cost:</strong> ${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(unitNet)} <span class="price-sub" style="display:inline;">(List: ${formatCurrency(listPrice || 0)} &times; ${netMult})</span></p>
                 </div>
                 <div class="item-price">${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(extRetail)}
-                <span class="price-sub">Ext List: ${isTBD ? 'TBD' : formatCurrency(extList)}</span></div></div>`;
+                    <span class="price-sub" style="color:var(--success);">Ext Net: ${isTBD ? 'TBD' : formatCurrency(extNet)}</span>
+                    <span class="price-sub">Margin: ${marginInput.value}%</span>
+                </div>
+            </div>`;
 
-            let totalList = extList, totalNet = unitNet * slabQty, totalRetail = extRetail;
+            let totalList = extList, totalNet = extNet, totalRetail = extRetail;
+            
             if (frameSelect.value !== 'none') {
                 const frame = VENDOR_CATALOG.prehungComponents[frameSelect.value];
                 const frameList = frame.listPrice + (jambSelect.value === '6_9_16' ? frame.jambUpcharge6916 : 0);
                 const frameNet = frameList * netMult;
                 const frameRetail = frameNet / (1 - margin);
+                
                 totalList += (frameList * qty);
                 totalNet += (frameNet * qty);
                 totalRetail += (frameRetail * qty);
-                itemsHtml += `<div class="line-item"><div class="item-details"><h4>${qty} x ${frame.name}</h4><p><strong>Jamb:</strong> ${jambSelect.options[jambSelect.selectedIndex].text}</p></div>
-                <div class="item-price">${formatCurrency(frameRetail * qty)}<span class="price-sub">Ext List: ${formatCurrency(frameList * qty)}</span></div></div>`;
+                
+                itemsHtml += `<div class="line-item">
+                    <div class="item-details">
+                        <h4>${qty} x ${frame.name}</h4>
+                        <p><strong>Jamb:</strong> ${jambSelect.options[jambSelect.selectedIndex].text}</p>
+                        <p style="margin-top:0.5rem; color:var(--success);"><strong>Net Cost:</strong> ${formatCurrency(frameNet)} <span class="price-sub" style="display:inline;">(List: ${formatCurrency(frameList)} &times; ${netMult})</span></p>
+                    </div>
+                    <div class="item-price">${formatCurrency(frameRetail * qty)}
+                        <span class="price-sub" style="color:var(--success);">Ext Net: ${formatCurrency(frameNet * qty)}</span>
+                        <span class="price-sub">Margin: ${marginInput.value}%</span>
+                    </div>
+                </div>`;
             }
+            
             lineItemsContainer.innerHTML = itemsHtml;
             totalNetDisplay.innerText = formatCurrency(totalNet);
             totalListDisplay.innerText = formatCurrency(totalList);
