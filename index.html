@@ -29,9 +29,17 @@
         .toggle-container:hover { border-color: var(--text-muted); }
         .toggle-container label { font-size: 0.85rem; cursor: pointer; user-select: none; font-weight: 500; }
         input[type="checkbox"] { cursor: pointer; width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
-        main { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 2rem; align-items: start; }
+        
+        main { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 2rem; align-items: start; }
+        
         .card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }
         .card h2 { font-size: 1.15rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+        
+        /* Sticky Right Panel for Scrolling UX */
+        .sticky-panel { position: sticky; top: 2rem; max-height: calc(100vh - 4rem); overflow-y: auto; }
+        .sticky-panel::-webkit-scrollbar { width: 6px; }
+        .sticky-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }
+        
         .form-section { background-color: rgba(15, 23, 42, 0.4); border: 1px solid rgba(51, 65, 85, 0.6); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; }
         .form-section-title { font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
@@ -63,16 +71,22 @@
         .btn-secondary { background-color: transparent; border: 1px solid var(--border); color: var(--text-main); }
         .btn-danger { background-color: transparent; border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; flex: 0.5; }
         .hidden { display: none !important; }
+        
+        /* Unified Client Mode Toggles */
+        body.client-mode .net-data { display: none !important; }
+
         @media print {
             body { background-color: white; color: black; padding: 0; }
             .header-controls, .form-section, .btn-group, .toggle-container { display: none; }
             header { border-bottom: 2px solid black; margin-bottom: 1rem; padding-bottom: 0.5rem; }
             main { grid-template-columns: 1fr; }
-            .card { border: none; box-shadow: none; padding: 0; width: 100%; }
+            .card { border: none; box-shadow: none; padding: 0; width: 100%; overflow: visible; }
             .header-title h1 { color: black; }
             .line-item { background-color: transparent; border: 1px solid #ccc; }
             .grand-total-box { background: none; border: 2px solid black; }
             .item-details h4, .item-details p, .item-price, .total-row, .grand-total-box span, .header-title p { color: black !important; }
+            /* Automatically hide wholesale data when printing */
+            .net-data { display: none !important; }
         }
     </style>
 </head>
@@ -107,17 +121,22 @@
                     <div class="form-group">
                         <label for="materialSelect">Primary Material</label>
                         <select id="materialSelect">
+                            <option value="" disabled selected>Select Material...</option>
                             <option value="fiberglass">Fiberglass (Smooth/Grain)</option>
                             <option value="wood">Hardwood (2026 Catalog)</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="collectionSelect">Collection Family</label>
-                        <select id="collectionSelect"></select>
+                        <select id="collectionSelect">
+                            <option value="" disabled selected>Select Collection...</option>
+                        </select>
                     </div>
                     <div class="form-group full-width">
                         <label for="sizeSelect">Nominal Size</label>
-                        <select id="sizeSelect"></select>
+                        <select id="sizeSelect">
+                            <option value="" disabled selected>Select Size...</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -129,11 +148,15 @@
                 <div class="form-grid">
                     <div class="form-group full-width">
                         <label for="doorStyleSelect">Base Door Style</label>
-                        <select id="doorStyleSelect"></select>
+                        <select id="doorStyleSelect">
+                            <option value="" disabled selected>Select Base Style...</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="glassSelect">Glass Type</label>
-                        <select id="glassSelect"></select>
+                        <select id="glassSelect">
+                            <option value="" disabled selected>Select Glass...</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="qtyInput">Quantity (Units)</label>
@@ -182,14 +205,14 @@
                 </div>
             </div>
         </div>
-        <div class="card" style="display: flex; flex-direction: column;">
+        <div class="card sticky-panel" style="display: flex; flex-direction: column;">
             <h2>
                 <span>2. Quote Summary & BOM</span>
                 <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);" id="quoteDateDisplay"></span>
             </h2>
             <div class="summary-box" id="lineItemsContainer"></div>
             <div class="total-section">
-                <div class="total-row net-cost-row" id="netCostContainer">
+                <div class="total-row net-cost-row net-data">
                     <span>Total Net Wholesale Cost (0.48):</span>
                     <span id="totalNetDisplay">$0.00</span>
                 </div>
@@ -428,7 +451,7 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
 
         document.getElementById('quoteDateDisplay').innerText = `Date: ${new Date().toLocaleDateString()}`;
 
-        let currentCollection = 'fiberglass';
+        let currentCollection = '';
         let currentSize = '';
         let selectedItem = null;
         let searchTimeout = null;
@@ -436,7 +459,7 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
         function formatCurrency(val) { return val.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); }
 
         function initApp() {
-            populateCollections();
+            resetQuoteForm();
             materialSelect.addEventListener('change', () => populateCollections());
             collectionSelect.addEventListener('change', (e) => { currentCollection = e.target.value; populateSizes(); });
             sizeSelect.addEventListener('change', (e) => { currentSize = e.target.value; populateDoors(); });
@@ -448,73 +471,97 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
             marginInput.addEventListener('input', calculateAndRenderQuote);
             frameSelect.addEventListener('change', (e) => { jambSelect.disabled = (e.target.value === 'none'); calculateAndRenderQuote(); });
             jambSelect.addEventListener('change', calculateAndRenderQuote);
-            clientModeToggle.addEventListener('change', toggleClientMode);
+            
+            clientModeToggle.addEventListener('change', (e) => {
+                document.body.classList.toggle('client-mode', e.target.checked);
+            });
+            
             resetBtn.addEventListener('click', resetQuoteForm);
             skuSearch.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => handleSkuSearch(e.target.value), 300); });
         }
 
-        function populateCollections() {
-            const mat = materialSelect.value;
-            const cols = materialMap[mat].filter(c => VENDOR_CATALOG.collections[c].items.length > 0);
-            collectionSelect.innerHTML = cols.map(c => `<option value="${c}">${VENDOR_CATALOG.collections[c].name}</option>`).join('');
-            currentCollection = cols[0];
-            populateSizes();
-        }
-
         function resetQuoteForm() {
             skuSearch.value = ''; searchFeedback.className = 'search-feedback'; searchFeedback.innerText = '';
-            materialSelect.value = 'fiberglass'; populateCollections();
-            qtyInput.value = 1; marginInput.value = 30; frameSelect.value = 'prehung_single';
-            jambSelect.disabled = false; jambSelect.value = '4_9_16';
+            
+            // Revert to pristine blank states
+            materialSelect.value = '';
+            collectionSelect.innerHTML = '<option value="" disabled selected>Select Collection...</option>';
+            sizeSelect.innerHTML = '<option value="" disabled selected>Select Size...</option>';
+            doorStyleSelect.innerHTML = '<option value="" disabled selected>Select Base Style...</option>';
+            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>';
+            
+            qtyInput.value = 1; marginInput.value = 30; frameSelect.value = 'none';
+            jambSelect.disabled = true; jambSelect.value = '4_9_16';
             finishSelect.value = 'unfinished'; handleFinishChange();
+            
+            currentCollection = ''; currentSize = ''; selectedItem = null;
+            calculateAndRenderQuote();
+        }
+
+        function populateCollections() {
+            const mat = materialSelect.value;
+            if (!mat) return;
+            const cols = materialMap[mat].filter(c => VENDOR_CATALOG.collections[c].items.length > 0);
+            collectionSelect.innerHTML = '<option value="" disabled selected>Select Collection...</option>' + 
+                cols.map(c => `<option value="${c}">${VENDOR_CATALOG.collections[c].name}</option>`).join('');
+            
+            currentCollection = '';
+            sizeSelect.innerHTML = '<option value="" disabled selected>Select Size...</option>';
+            doorStyleSelect.innerHTML = '<option value="" disabled selected>Select Base Style...</option>';
+            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>';
+            selectedItem = null;
+            calculateAndRenderQuote();
         }
 
         function populateSizes() {
+            if (!currentCollection) return;
             const items = VENDOR_CATALOG.collections[currentCollection].items;
             const sizes = [...new Set(items.map(item => item.size))].sort((a,b) => parseInt(a) - parseInt(b));
-            if (sizes.length === 0) {
-                sizeSelect.innerHTML = `<option value="">No Sizes Available</option>`; currentSize = '';
-            } else {
-                sizeSelect.innerHTML = sizes.map(s => `<option value="${s}">${s} Nominal</option>`).join('');
-                currentSize = sizes.includes(currentSize) ? currentSize : sizes[0];
-                sizeSelect.value = currentSize;
-            }
-            populateDoors();
+            
+            sizeSelect.innerHTML = '<option value="" disabled selected>Select Size...</option>' + 
+                sizes.map(s => `<option value="${s}">${s} Nominal</option>`).join('');
+            
+            currentSize = '';
+            doorStyleSelect.innerHTML = '<option value="" disabled selected>Select Base Style...</option>';
+            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>';
+            selectedItem = null;
+            calculateAndRenderQuote();
         }
 
         function populateDoors() {
+            if (!currentSize) return;
             const items = VENDOR_CATALOG.collections[currentCollection].items.filter(item => item.size === currentSize);
             const uniqueStyles = [...new Set(items.map(item => item.desc))];
-            if (uniqueStyles.length === 0) {
-                doorStyleSelect.innerHTML = `<option value="">No items available</option>`; glassSelect.innerHTML = `<option value="">N/A</option>`; selectedItem = null;
-            } else {
-                doorStyleSelect.innerHTML = uniqueStyles.map(desc => {
+            
+            doorStyleSelect.innerHTML = '<option value="" disabled selected>Select Base Style...</option>' + 
+                uniqueStyles.map(desc => {
                     const firstMatch = items.find(i => i.desc === desc);
                     return `<option value="${desc}">[Pg ${firstMatch.page || 'N/A'}] ${desc}</option>`;
                 }).join('');
-                doorStyleSelect.value = uniqueStyles.includes(selectedItem?.desc) ? selectedItem.desc : uniqueStyles[0];
-            }
-            populateGlassOptions();
+                
+            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>';
+            selectedItem = null;
+            calculateAndRenderQuote();
         }
 
         function populateGlassOptions() {
             const currentStyle = doorStyleSelect.value;
+            if (!currentStyle) return;
+            
             const items = VENDOR_CATALOG.collections[currentCollection].items.filter(item => item.size === currentSize && item.desc === currentStyle);
-            if (items.length === 0) {
-                glassSelect.innerHTML = `<option value="">N/A</option>`; selectedItem = null;
-            } else {
-                glassSelect.innerHTML = items.map(item => `<option value="${item.glass}">${item.glass}</option>`).join('');
-                const foundExisting = items.find(i => i.glass === selectedItem?.glass);
-                selectedItem = foundExisting || items[0];
-                glassSelect.value = selectedItem.glass;
-            }
-            updateFinishOptions(); calculateAndRenderQuote();
+            
+            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>' + 
+                items.map(item => `<option value="${item.glass}">${item.glass}</option>`).join('');
+                
+            selectedItem = null;
+            calculateAndRenderQuote();
         }
 
         function handleGlassSelection(e) {
             const glass = e.target.value;
             selectedItem = VENDOR_CATALOG.collections[currentCollection].items.find(i => i.desc === doorStyleSelect.value && i.glass === glass && i.size === currentSize);
-            updateFinishOptions(); calculateAndRenderQuote();
+            updateFinishOptions(); 
+            calculateAndRenderQuote();
         }
 
         function handleFinishChange() {
@@ -536,6 +583,7 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
             const query = queryText.trim().toUpperCase();
             searchFeedback.className = 'search-feedback'; searchFeedback.innerText = '';
             if (query.length < 3) return;
+            
             let exact = [], partial = [];
             Object.entries(VENDOR_CATALOG.collections).forEach(([colKey, colData]) => {
                 colData.items.forEach(item => {
@@ -543,23 +591,56 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
                     else if (item.sku.toUpperCase().includes(query) || item.desc.toUpperCase().includes(query)) partial.push({item, colKey});
                 });
             });
+            
             const foundObj = exact[0] || partial[0];
+            
             if (foundObj) {
                 const {item, colKey} = foundObj;
                 searchFeedback.className = 'search-feedback success'; searchFeedback.innerText = `✓ Match Found: [Pg ${item.page || 'N/A'}] [${item.sku}]`;
+                
                 const foundMat = materialMap.wood.includes(colKey) ? 'wood' : 'fiberglass';
-                if (materialSelect.value !== foundMat) { materialSelect.value = foundMat; populateCollections(); }
-                currentCollection = colKey; collectionSelect.value = colKey; currentSize = item.size; populateSizes();
-                selectedItem = item; doorStyleSelect.value = item.desc; populateGlassOptions(); glassSelect.value = item.glass;
-                updateFinishOptions(); calculateAndRenderQuote();
-            } else { searchFeedback.className = 'search-feedback error'; searchFeedback.innerText = `No catalog match found for "${queryText}"`; }
+                if (materialSelect.value !== foundMat) { 
+                    materialSelect.value = foundMat; 
+                }
+                
+                // Directly bypass the manual step-by-step empty states for instant population
+                const cols = materialMap[foundMat].filter(c => VENDOR_CATALOG.collections[c].items.length > 0);
+                collectionSelect.innerHTML = cols.map(c => `<option value="${c}">${VENDOR_CATALOG.collections[c].name}</option>`).join('');
+                
+                currentCollection = colKey; 
+                collectionSelect.value = colKey; 
+                
+                const itemsCol = VENDOR_CATALOG.collections[currentCollection].items;
+                const sizes = [...new Set(itemsCol.map(i => i.size))].sort((a,b) => parseInt(a) - parseInt(b));
+                sizeSelect.innerHTML = sizes.map(s => `<option value="${s}">${s} Nominal</option>`).join('');
+                
+                currentSize = item.size; 
+                sizeSelect.value = currentSize;
+                
+                const itemsSize = itemsCol.filter(i => i.size === currentSize);
+                const uniqueStyles = [...new Set(itemsSize.map(i => i.desc))];
+                doorStyleSelect.innerHTML = uniqueStyles.map(desc => {
+                    const firstMatch = itemsSize.find(i => i.desc === desc);
+                    return `<option value="${desc}">[Pg ${firstMatch.page || 'N/A'}] ${desc}</option>`;
+                }).join('');
+                
+                doorStyleSelect.value = item.desc;
+                
+                const itemsStyle = itemsSize.filter(i => i.desc === item.desc);
+                glassSelect.innerHTML = itemsStyle.map(i => `<option value="${i.glass}">${i.glass}</option>`).join('');
+                glassSelect.value = item.glass;
+                
+                selectedItem = item; 
+                updateFinishOptions(); 
+                calculateAndRenderQuote();
+            } else { 
+                searchFeedback.className = 'search-feedback error'; searchFeedback.innerText = `No catalog match found for "${queryText}"`; 
+            }
         }
-
-        function toggleClientMode() { netCostContainer.classList.toggle('hidden', clientModeToggle.checked); }
 
         function calculateAndRenderQuote() {
             if (!selectedItem) {
-                lineItemsContainer.innerHTML = `<p style="color:var(--text-muted);">Please select a valid door configuration.</p>`;
+                lineItemsContainer.innerHTML = `<div style="text-align:center; padding: 2rem; color: var(--text-muted); border: 1px dashed var(--border); border-radius: 8px;">Please select a material, collection, size, style, and glass type to generate a quote.</div>`;
                 totalNetDisplay.innerText = "$0.00"; totalListDisplay.innerText = "$0.00"; grandTotalDisplay.innerText = "$0.00"; return;
             }
             
@@ -576,7 +657,6 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
             const netMult = VENDOR_CATALOG.metadata.netMultiplier;
             const margin = Math.max(0, Math.min(99, parseFloat(marginInput.value) || 30)) / 100;
             
-            // Execute correct Net & Margin calculations
             const unitNet = (listPrice || 0) * netMult;
             const unitRetail = unitNet / (1 - margin);
             const extList = (listPrice || 0) * slabQty;
@@ -588,11 +668,11 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
                     <h4>${slabQty} x ${selectedItem.desc}</h4>
                     <p><strong>SKU:</strong> ${selectedItem.sku} | <strong>Size:</strong> ${selectedItem.size} | <strong>Glass:</strong> ${selectedItem.glass}</p>
                     <p><strong>Finish:</strong> ${finishLabel}</p>
-                    <p style="margin-top:0.5rem; color:var(--success);"><strong>Net Cost:</strong> ${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(unitNet)} <span class="price-sub" style="display:inline;">(List: ${formatCurrency(listPrice || 0)} &times; ${netMult})</span></p>
+                    <p class="net-data" style="margin-top:0.5rem; color:var(--success);"><strong>Net Cost:</strong> ${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(unitNet)} <span class="price-sub" style="display:inline;">(List: ${formatCurrency(listPrice || 0)} &times; ${netMult})</span></p>
                 </div>
                 <div class="item-price">${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(extRetail)}
-                    <span class="price-sub" style="color:var(--success);">Ext Net: ${isTBD ? 'TBD' : formatCurrency(extNet)}</span>
-                    <span class="price-sub">Margin: ${marginInput.value}%</span>
+                    <span class="price-sub net-data" style="color:var(--success);">Ext Net: ${isTBD ? 'TBD' : formatCurrency(extNet)}</span>
+                    <span class="price-sub net-data">Margin: ${marginInput.value}%</span>
                 </div>
             </div>`;
 
@@ -612,11 +692,11 @@ BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
                     <div class="item-details">
                         <h4>${qty} x ${frame.name}</h4>
                         <p><strong>Jamb:</strong> ${jambSelect.options[jambSelect.selectedIndex].text}</p>
-                        <p style="margin-top:0.5rem; color:var(--success);"><strong>Net Cost:</strong> ${formatCurrency(frameNet)} <span class="price-sub" style="display:inline;">(List: ${formatCurrency(frameList)} &times; ${netMult})</span></p>
+                        <p class="net-data" style="margin-top:0.5rem; color:var(--success);"><strong>Net Cost:</strong> ${formatCurrency(frameNet)} <span class="price-sub" style="display:inline;">(List: ${formatCurrency(frameList)} &times; ${netMult})</span></p>
                     </div>
                     <div class="item-price">${formatCurrency(frameRetail * qty)}
-                        <span class="price-sub" style="color:var(--success);">Ext Net: ${formatCurrency(frameNet * qty)}</span>
-                        <span class="price-sub">Margin: ${marginInput.value}%</span>
+                        <span class="price-sub net-data" style="color:var(--success);">Ext Net: ${formatCurrency(frameNet * qty)}</span>
+                        <span class="price-sub net-data">Margin: ${marginInput.value}%</span>
                     </div>
                 </div>`;
             }
