@@ -3,726 +3,828 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Quoting & BOM Estimator Suite</title>
+    <title>SimplyDoors Quoting System - Hoelscher 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-section: #0b1325;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --border: #334155;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); padding: 2rem; line-height: 1.5; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 2rem; }
-        .header-title h1 { font-size: 1.75rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em; }
-        .header-title p { color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem; }
-        .header-controls { display: flex; gap: 1rem; align-items: center; }
-        .badge { background-color: #1e3a8a; color: #bfdbfe; padding: 0.35rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; border: 1px solid #3b82f6; letter-spacing: 0.05em; text-transform: uppercase; }
-        .toggle-container { display: flex; align-items: center; gap: 0.6rem; background: var(--bg-card); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); transition: border-color 0.2s; }
-        .toggle-container:hover { border-color: var(--text-muted); }
-        .toggle-container label { font-size: 0.85rem; cursor: pointer; user-select: none; font-weight: 500; }
-        input[type="checkbox"] { cursor: pointer; width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; color: #1e293b; }
+        .collection-card.active { border-color: #2563eb; background-color: #eff6ff; }
+        .collection-card.active h4 { color: #1d4ed8; }
         
-        main { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 2rem; align-items: start; }
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #cbd5e1; border-radius: 2px; }
         
-        .card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }
-        .card h2 { font-size: 1.15rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
-        
-        /* Sticky Right Panel for Scrolling UX */
-        .sticky-panel { position: sticky; top: 2rem; max-height: calc(100vh - 4rem); overflow-y: auto; }
-        .sticky-panel::-webkit-scrollbar { width: 6px; }
-        .sticky-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }
-        
-        .form-section { background-color: rgba(15, 23, 42, 0.4); border: 1px solid rgba(51, 65, 85, 0.6); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; }
-        .form-section-title { font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        .form-group.full-width { grid-column: span 2; }
-        label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-        select, input[type="text"], input[type="number"] { width: 100%; padding: 0.7rem 0.8rem; background-color: var(--bg-dark); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 0.95rem; outline: none; transition: all 0.2s; }
-        select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
-        select:disabled { opacity: 0.4; cursor: not-allowed; border-color: rgba(51, 65, 85, 0.3); }
-        .search-feedback { font-size: 0.8rem; margin-top: 0.35rem; min-height: 1.2em; font-weight: 500; }
-        .search-feedback.success { color: var(--success); } .search-feedback.error { color: var(--error); }
-        .notice-box { grid-column: span 2; background-color: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-left: 4px solid var(--warning); padding: 0.85rem 1rem; border-radius: 6px; font-size: 0.85rem; color: #fcd34d; margin-bottom: 0.5rem; }
-        .summary-box { display: flex; flex-direction: column; gap: 1rem; }
-        .line-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 1rem; background-color: rgba(15, 23, 42, 0.5); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 8px; transition: border-color 0.2s; }
-        .line-item.pricing-tbd { border-color: rgba(245, 158, 11, 0.5); background-color: rgba(245, 158, 11, 0.05); }
-        .item-details h4 { font-size: 1rem; color: var(--text-main); font-weight: 600; }
-        .item-details p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem; line-height: 1.4; }
-        .item-price { font-size: 1.05rem; font-weight: 700; text-align: right; color: var(--text-main); white-space: nowrap; margin-left: 1rem; }
-        .price-sub { font-size: 0.75rem; color: var(--text-muted); display: block; font-weight: 500; margin-top: 0.2rem; }
-        .total-section { margin-top: 1.5rem; border-top: 2px solid var(--border); padding-top: 1.25rem; display: flex; flex-direction: column; gap: 0.65rem; }
-        .total-row { display: flex; justify-content: space-between; font-size: 1.05rem; color: var(--text-muted); }
-        .total-row span:last-child { color: var(--text-main); font-weight: 600; }
-        .grand-total-box { margin-top: 0.5rem; padding: 1.25rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.4)); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .grand-total-box span:first-child { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
-        .grand-total-box span:last-child { font-size: 1.65rem; font-weight: 800; color: var(--success); }
-        .btn-group { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
-        button { flex: 1; padding: 0.75rem 1rem; border: none; border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
-        .btn-primary { background-color: var(--accent); color: white; }
-        .btn-secondary { background-color: transparent; border: 1px solid var(--border); color: var(--text-main); }
-        .btn-danger { background-color: transparent; border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; flex: 0.5; }
-        .hidden { display: none !important; }
-        
-        /* Unified Client Mode Toggles */
-        body.client-mode .net-data { display: none !important; }
-
         @media print {
-            body { background-color: white; color: black; padding: 0; }
-            .header-controls, .form-section, .btn-group, .toggle-container { display: none; }
-            header { border-bottom: 2px solid black; margin-bottom: 1rem; padding-bottom: 0.5rem; }
-            main { grid-template-columns: 1fr; }
-            .card { border: none; box-shadow: none; padding: 0; width: 100%; overflow: visible; }
-            .header-title h1 { color: black; }
-            .line-item { background-color: transparent; border: 1px solid #ccc; }
-            .grand-total-box { background: none; border: 2px solid black; }
-            .item-details h4, .item-details p, .item-price, .total-row, .grand-total-box span, .header-title p { color: black !important; }
-            /* Automatically hide wholesale data when printing */
-            .net-data { display: none !important; }
+            body { background-color: white; padding: 0; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .proposal-card { border: none !important; box-shadow: none !important; }
         }
+        .print-only { display: none; }
+        
+        /* Custom scrollbar for the cart */
+        .cart-scroll::-webkit-scrollbar { width: 4px; }
+        .cart-scroll::-webkit-scrollbar-track { background: #1e293b; }
+        .cart-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     </style>
 </head>
-<body>
-    <header>
-        <div class="header-title">
-            <h1>SimplyDoors Quoting Suite</h1>
-            <p>Enterprise Estimator & BOM Generator &bull; Hoelscher 2026 Catalogs</p>
-        </div>
-        <div class="header-controls">
-            <span class="badge" id="testsPassedBadge">Net Mult: 0.48</span>
-            <div class="toggle-container">
-                <input type="checkbox" id="clientModeToggle">
-                <label for="clientModeToggle">Client Screen Share (Hide Net)</label>
+<body class="min-h-screen">
+
+    <!-- TOP NAVIGATION -->
+    <nav class="bg-[#0f172a] text-white py-3 px-6 flex justify-between items-center no-print sticky top-0 z-50 shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 p-2 rounded text-xl"><i class="fas fa-door-open"></i></div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">SimplyDoors</h1>
+                <p class="text-xs text-slate-400">Hoelscher 2025 Fiberglass Door Quoting System</p>
             </div>
         </div>
-    </header>
-    <main>
-        <div class="card">
-            <h2>
-                <span>1. Door Specification Wizard</span>
-                <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Step-by-Step Configuration</span>
-            </h2>
-            <div class="form-section">
-                <div class="form-section-title"><span>01. Catalog & Dimensions</span></div>
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label for="skuSearch">Instant SKU / Description Search</label>
-                        <input type="text" id="skuSearch" placeholder="e.g., M1LVCLE3080 or 6 Panel Mahogany...">
-                        <div id="searchFeedback" class="search-feedback"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="materialSelect">Primary Material</label>
-                        <select id="materialSelect">
-                            <option value="" disabled selected>Select Material...</option>
-                            <option value="fiberglass">Fiberglass (Smooth/Grain)</option>
-                            <option value="wood">Hardwood (2026 Catalog)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="collectionSelect">Collection Family</label>
-                        <select id="collectionSelect">
-                            <option value="" disabled selected>Select Collection...</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width">
-                        <label for="sizeSelect">Nominal Size</label>
-                        <select id="sizeSelect">
-                            <option value="" disabled selected>Select Size...</option>
-                        </select>
-                    </div>
-                </div>
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center bg-slate-800 rounded px-3 py-1 border border-slate-700">
+                <i class="fas fa-user-circle text-slate-400 mr-2"></i>
+                <span class="text-xs text-slate-400 mr-2">Sales Rep:</span>
+                <select id="salesRep" class="bg-transparent text-sm font-semibold outline-none cursor-pointer text-white" onchange="generateProposal()">
+                    <option value="Adem Atis">Adem Atis</option>
+                    <option value="Cory Broyles">Cory Broyles</option>
+                    <option value="House Account">House Account</option>
+                </select>
             </div>
-            <div class="notice-box">
-                <strong>Manufacturing Note:</strong> All doors are manufactured 1/4" undersized in width and 3/4" undersized in height.
-            </div>
-            <div class="form-section" style="margin-top: 1.25rem;">
-                <div class="form-section-title"><span>02. Style, Glazing & Quantity</span></div>
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label for="doorStyleSelect">Base Door Style</label>
-                        <select id="doorStyleSelect">
-                            <option value="" disabled selected>Select Base Style...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="glassSelect">Glass Type</label>
-                        <select id="glassSelect">
-                            <option value="" disabled selected>Select Glass...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="qtyInput">Quantity (Units)</label>
-                        <input type="number" id="qtyInput" value="1" min="1" step="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="finishSelect">Finish Type</label>
-                        <select id="finishSelect">
-                            <option value="unfinished">Unfinished (Raw/Primed)</option>
-                            <option value="prefinished">Pre-Finished</option>
-                        </select>
-                    </div>
-                    <div class="form-group hidden" id="stainGroup">
-                        <label for="stainSelect">Stain Color</label>
-                        <select id="stainSelect">
-                            <option value="Midnight">Midnight</option>
-                            <option value="Slate">Slate</option>
-                            <option value="Bourbon">Bourbon</option>
-                            <option value="Fox">Fox</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="form-section" style="margin-bottom: 0;">
-                <div class="form-section-title"><span>03. Prehung System & Margin Rules</span></div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="frameSelect">Frame / Prehung Package</label>
-                        <select id="frameSelect">
-                            <option value="none">Slab Only (No Frame)</option>
-                            <option value="prehung_single">Prehung Single Door Kit</option>
-                            <option value="prehung_double">Prehung Double Door Kit (2x Slabs Required)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="jambSelect">Jamb Size</label>
-                        <select id="jambSelect" disabled>
-                            <option value="4_9_16">4-9/16" Jamb Depth</option>
-                            <option value="6_9_16">6-9/16" Jamb Depth (+Cost)</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width" style="margin-top: 0.5rem;">
-                        <label for="marginInput">Target Margin (%)</label>
-                        <input type="number" id="marginInput" value="30" step="1" min="0" max="99">
-                    </div>
-                </div>
-            </div>
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-semibold transition-colors flex items-center">
+                <i class="fas fa-print mr-2"></i> Print / PDF Quote
+            </button>
         </div>
-        <div class="card sticky-panel" style="display: flex; flex-direction: column;">
-            <h2>
-                <span>2. Quote Summary & BOM</span>
-                <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);" id="quoteDateDisplay"></span>
-            </h2>
-            <div class="summary-box" id="lineItemsContainer"></div>
-            <div class="total-section">
-                <div class="total-row net-cost-row net-data">
-                    <span>Total Net Wholesale Cost (0.48):</span>
-                    <span id="totalNetDisplay">$0.00</span>
+    </nav>
+
+    <!-- MAIN DASHBOARD -->
+    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
+        
+        <!-- LEFT COLUMN (CONFIGURATOR) -->
+        <div class="lg:col-span-8 space-y-6">
+            
+            <!-- Customer Details -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-sm font-bold text-slate-700 mb-4 flex items-center">
+                    <i class="fas fa-address-card text-blue-500 mr-2"></i> Customer & Project Details
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Customer Name</label>
+                        <input type="text" id="custName" value="John Doe" oninput="generateProposal()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Phone Number</label>
+                        <input type="text" id="custPhone" value="(210) 555-0199" oninput="generateProposal()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Installation Address</label>
+                        <input type="text" id="custAddress" value="1234 Alamo Heights Blvd, San Antonio, TX" oninput="generateProposal()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Quote / Job #</label>
+                        <input type="text" id="quoteNumber" value="SD-2026-0789" oninput="generateProposal()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                    </div>
                 </div>
-                <div class="total-row">
-                    <span>Total List Price:</span>
-                    <span id="totalListDisplay">$0.00</span>
+            </section>
+
+            <!-- 1. Collection -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center mb-4">
+                    <span class="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">1</span>
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Collection & Grain Texture</h2>
                 </div>
-                <div class="grand-total-box">
-                    <span>Customer Quote Total:</span>
-                    <span id="grandTotalDisplay">$0.00</span>
-                </div>
-                <div class="btn-group">
-                    <button class="btn-danger" id="resetBtn" title="Reset Quote">Reset</button>
-                    <button class="btn-secondary" onclick="window.print()">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-                        Print BOM
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button onclick="setCollection('Mahogany')" id="col-Mahogany" class="collection-card active p-4 border-2 border-slate-200 rounded-lg text-left transition-colors">
+                        <h4 class="font-bold text-sm mb-1 text-slate-800">Mahogany Grain</h4>
+                        <p class="text-xs text-slate-500">Stainable Premium</p>
                     </button>
-                    <button class="btn-primary" id="copyQuoteBtn">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-                        Copy Quote
+                    <button onclick="setCollection('Oak')" id="col-Oak" class="collection-card p-4 border-2 border-slate-200 rounded-lg text-left transition-colors">
+                        <h4 class="font-bold text-sm mb-1 text-slate-800">Oak Grain</h4>
+                        <p class="text-xs text-slate-500">Traditional 6-Panel</p>
+                    </button>
+                    <button onclick="setCollection('Smooth')" id="col-Smooth" class="collection-card p-4 border-2 border-slate-200 rounded-lg text-left transition-colors">
+                        <h4 class="font-bold text-sm mb-1 text-slate-800">Smooth Skin</h4>
+                        <p class="text-xs text-slate-500">Paintable Smooth</p>
+                    </button>
+                    <button onclick="setCollection('Fir')" id="col-Fir" class="collection-card p-4 border-2 border-slate-200 rounded-lg text-left transition-colors">
+                        <h4 class="font-bold text-sm mb-1 text-slate-800">Fir Skin</h4>
+                        <p class="text-xs text-slate-500">Craftsman Fir Texture</p>
                     </button>
                 </div>
+            </section>
+
+            <!-- 2. Door Model -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center mb-4">
+                    <span class="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">2</span>
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Door Model & Dimensions</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Door Model Family</label>
+                        <select id="doorModel" onchange="populateOptions()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <!-- Populated dynamically based on collection -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Nominal Door Size (W x H)</label>
+                        <select id="doorSize" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <!-- Populated dynamically based on model sizes -->
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Glass & Finish -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center mb-4">
+                    <span class="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">3</span>
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Glass & Finish Selection</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="glassContainer" style="display: none;">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Glass / Glazing Type</label>
+                        <select id="doorGlass" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <!-- Populated dynamically based on door model -->
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Finish / Pre-Finish Color</label>
+                        <select id="doorFinish" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <option value="Unfinished">Unfinished (Slab Only)</option>
+                            <option value="Midnight (M)">Prefinished - Midnight (M)</option>
+                            <option value="Slate (S)">Prefinished - Slate (S)</option>
+                            <option value="Bourbon (B)">Prefinished - Bourbon (B)</option>
+                            <option value="Fox (F)">Prefinished - Fox (F)</option>
+                            <option value="Black Brushed Smooth">Black Brushed Smooth (Smooth Only)</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. System & Sidelites -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center mb-4">
+                    <span class="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">4</span>
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">System Configuration & Sidelites</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">System Layout</label>
+                        <select id="systemLayout" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <option value="Single">Single Door System</option>
+                            <option value="Single + 1 SL">Single w/ 1 Sidelite</option>
+                            <option value="Single + 2 SL">Single w/ 2 Sidelites</option>
+                            <option value="Double">Double Door System</option>
+                            <option value="Slab Only">Slab Only (No Frame)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Handing & Swing</label>
+                        <select id="doorHanding" onchange="generateProposal()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <option value="Left Hand (LH) Inswing">Left Hand (LH) Inswing</option>
+                            <option value="Right Hand (RH) Inswing">Right Hand (RH) Inswing</option>
+                            <option value="Left Hand (LH) Outswing">Left Hand (LH) Outswing</option>
+                            <option value="Right Hand (RH) Outswing">Right Hand (RH) Outswing</option>
+                            <option value="N/A (Slab)">N/A (Slab Only)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Jamb Depth</label>
+                        <select id="jambDepth" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <option value="4 9/16">4-9/16" Standard Jamb</option>
+                            <option value="6 9/16">6-9/16" Wide Jamb</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="prehangAlert" class="p-4 rounded border text-sm mt-4" style="display: none;">
+                    <!-- Dynamic Alert via JS -->
+                </div>
+            </section>
+
+            <!-- 5. Add-ons & Labor -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center mb-4">
+                    <span class="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">5</span>
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Add-ons & Installation Labor</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Add-On Container: Hidden unless specific doors selected -->
+                    <div id="addOnContainer" style="display: none;">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Decorative Grille / Speakeasy Mask</label>
+                        <select id="addOns" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <option value="0">None</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Installation & Removal Labor</label>
+                        <select id="installLabor" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
+                            <option value="0">None (Delivery Only)</option>
+                            <option value="450">Standard Single Door Install (+$450)</option>
+                            <option value="650">Single + Sidelites Install (+$650)</option>
+                            <option value="800">Double Door System Install (+$800)</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN (SUMMARY STICKY & CART) -->
+        <div class="lg:col-span-4">
+            <div class="bg-[#0f172a] text-white rounded-xl shadow-lg sticky top-20 border border-slate-800 flex flex-col max-h-[90vh]">
+                
+                <!-- CURRENT ITEM SUMMARY -->
+                <div class="flex-shrink-0">
+                    <div class="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-900 rounded-t-xl">
+                        <h3 class="font-bold tracking-wide flex items-center"><i class="fas fa-calculator mr-2 text-blue-400"></i> CONFIGURATION</h3>
+                        <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300 font-mono" id="sku-display">SKU: ---</span>
+                    </div>
+                    
+                    <div class="p-4 border-b border-slate-700 bg-slate-800/50">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-400">Unit Size (W x H):</span>
+                            <span class="font-semibold font-mono" id="sumUnitSize"></span>
+                        </div>
+                        <div class="flex justify-between text-sm text-emerald-400">
+                            <span>Rec. Rough Opening:</span>
+                            <span class="font-semibold font-mono" id="sumRO"></span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 space-y-2 text-sm border-b border-slate-700">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Door Slab(s) Net Cost:</span>
+                            <span class="font-mono" id="costSlab">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Sidelite(s) Net Cost:</span>
+                            <span class="font-mono" id="costSidelite">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Prehanging / Frame Cost:</span>
+                            <span class="font-mono" id="costPrehang">$0.00</span>
+                        </div>
+                        <div class="flex justify-between" id="summary-addons-row" style="display: none;">
+                            <span class="text-slate-400">Add-ons & Options Net:</span>
+                            <span class="font-mono" id="costAddons">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Installation / Labor:</span>
+                            <span class="font-mono" id="costLabor">$0.00</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-base pt-2 border-t border-slate-700 text-blue-300">
+                            <span>Item Dealer Cost:</span>
+                            <span class="font-mono" id="costTotal">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-b border-slate-700">
+                        <div class="flex justify-between text-xs font-bold text-slate-400 mb-2">
+                            <span>TARGET GROSS MARGIN</span>
+                            <span class="text-emerald-400" id="marginDisplay">40%</span>
+                        </div>
+                        <input type="range" id="marginSlider" min="15" max="60" value="40" oninput="runQuoteEngine()" class="w-full">
+                    </div>
+                    
+                    <div class="p-4 bg-slate-900 text-center flex justify-between items-center">
+                        <div class="text-left">
+                            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Current Item Price</p>
+                            <p class="text-2xl font-black text-white" id="priceRetail">$0.00</p>
+                        </div>
+                        <button onclick="addToQuote()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded text-sm font-bold transition-colors shadow-lg">
+                            <i class="fas fa-plus mr-1"></i> Add to Quote
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CART LIST -->
+                <div id="cart-container" class="hidden flex-col flex-1 overflow-hidden">
+                    <div class="p-3 bg-slate-800 text-xs font-bold text-slate-400 border-t border-b border-slate-700">
+                        QUOTE ITEMS (<span id="cart-count">0</span>)
+                    </div>
+                    <div id="cart-items" class="p-3 space-y-2 overflow-y-auto cart-scroll flex-1">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="p-4 bg-slate-900 border-t border-slate-700 mt-auto">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm font-bold text-slate-400 uppercase tracking-widest">Grand Total</span>
+                            <span class="text-3xl font-black text-white" id="grandTotalRetail">$0.00</span>
+                        </div>
+                        <button onclick="scrollToProposal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded text-sm font-bold transition-colors">
+                            <i class="fas fa-file-invoice mr-2"></i> View Customer Proposal
+                        </button>
+                    </div>
+                </div>
+                
             </div>
         </div>
     </main>
+
+    <!-- PRINT PROPOSAL TEMPLATE -->
+    <div id="proposal-anchor" class="max-w-4xl mx-auto p-6 mb-12 print-only">
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-10 proposal-card">
+            
+            <div class="flex justify-between border-b border-slate-200 pb-6 mb-6">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">SimplyDoors</h1>
+                    <p class="text-xs text-slate-500">San Antonio Door & Window Specialists</p>
+                    <p class="text-xs text-slate-500">Sales Order & Installation Quote</p>
+                </div>
+                <div class="text-right text-xs text-slate-600 space-y-1">
+                    <p><strong>Quote #:</strong> <span id="prop-quote-num"></span></p>
+                    <p><strong>Date:</strong> <span id="prop-date"></span></p>
+                    <p><strong>Sales Rep:</strong> <span id="prop-rep"></span></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 mb-8 text-sm">
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-2">CUSTOMER INFORMATION</h4>
+                    <p class="font-semibold text-slate-700" id="prop-cust-name"></p>
+                    <p class="text-slate-600" id="prop-cust-phone"></p>
+                    <p class="text-slate-600" id="prop-cust-address"></p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-2">TERMS</h4>
+                    <p class="text-slate-600">Quote valid for 30 days.</p>
+                    <p class="text-slate-600">Custom orders non-refundable once approved.</p>
+                </div>
+            </div>
+
+            <table class="w-full text-sm border-collapse mb-8">
+                <thead>
+                    <tr class="bg-[#0f172a] text-white">
+                        <th class="py-2 px-3 text-left w-1/3">SKU / Item Description</th>
+                        <th class="py-2 px-3 text-left">Specs & Options</th>
+                        <th class="py-2 px-3 text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="prop-tbody" class="border-b border-slate-200">
+                    <!-- Populated dynamically by JS -->
+                </tbody>
+            </table>
+
+            <div class="flex justify-between items-end">
+                <div class="w-2/3 pr-8 text-xs text-slate-500 space-y-2">
+                    <p><strong>Warranty Summary:</strong> 5-Year Limited Warranty on Fiberglass Door Slabs; 24-Month Warranty on Prefinished Finishes; 5-Year Insulated Glass Seal Warranty.</p>
+                    <p><strong>Deposit Requirement:</strong> 50% deposit required upon order approval. Remaining balance due upon installation completion.</p>
+                </div>
+                <div class="w-1/3 text-right">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">TOTAL PRICE</p>
+                    <p class="text-3xl font-black text-slate-900" id="prop-total">$0.00</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <script>
-        const rawFiberglassTSV = `FG1LVCLE3080|3080 Contemporary 1 Lite Vertical - Mahogany Grain|Clear Low E|4|1728|2337
-FG1LVSN3080|3080 Contemporary 1 Lite Vertical - Mahogany Grain|Satin|4|1728|2337
-FG1LVSB3080|3080 Contemporary 1 Lite Vertical - Mahogany Grain|Sandblast|4|1728|2337
-FG1LVR3080|3080 Contemporary 1 Lite Vertical - Mahogany Grain|Reeded|4|1728|2337
-FG3GPWCLE3068|3068 Contemporary 3 Lite - Mahogany Grain|Clear Low E|4|1485|2008
-FG3GPWSN3068|3068 Contemporary 3 Lite - Mahogany Grain|Satin|4|1485|2008
-FG3GPWRN3068|3068 Contemporary 3 Lite - Mahogany Grain|Rain|4|1485|2008
-FG3GPWR3068|3068 Contemporary 3 Lite - Mahogany Grain|Reeded|4|1485|2008
-FG3GPWCLE3080|3080 Contemporary 3 Lite - Mahogany Grain|Clear Low E|4|1728|2337
-FG3GPWSN3080|3080 Contemporary 3 Lite - Mahogany Grain|Satin|4|1728|2337
-FG3GPWRN3080|3080 Contemporary 3 Lite - Mahogany Grain|Rain|4|1728|2337
-FG3GPWR3080|3080 Contemporary 3 Lite - Mahogany Grain|Reeded|4|1728|2337
-FG3GPWF3080|3080 Contemporary 3 Lite - Mahogany Grain|Flemish|4|1728|2337
-FG4GPWCLE3068|3068 Contemporary 4 Lite - Mahogany Grain|Clear Low E|5|1485|2008
-FG4GPWSB3068|3068 Contemporary 4 Lite - Mahogany Grain|Sandblast|5|1485|2008
-FG4GPWSN3068|3068 Contemporary 4 Lite - Mahogany Grain|Satin|5|1485|2008
-FG4GPWRN3068|3068 Contemporary 4 Lite - Mahogany Grain|Rain|5|1485|2008
-FG4GPWR3068|3068 Contemporary 4 Lite - Mahogany Grain|Reeded|5|1485|2008
-FG5GPWCLE3080|3080 Contemporary 5 Lite - Mahogany Grain|Clear Low E|5|1728|2337
-FG5GPWSN3080|3080 Contemporary 5 Lite - Mahogany Grain|Satin|5|1728|2337
-FG5GPWSB3080|3080 Contemporary 5 Lite - Mahogany Grain|Sandblast|5|1728|2337
-FG5GPWRN3080|3080 Contemporary 5 Lite - Mahogany Grain|Rain|5|1728|2337
-FG5GPWF3080|3080 Contemporary 5 Lite - Mahogany Grain|Flemish|5|1728|2337
-FG5GPWR3080|3080 Contemporary 5 Lite - Mahogany Grain|Reeded|5|1728|2337
-FG5GPWCLE3680|3680 Contemporary 5 Lite - Mahogany Grain|Clear Low E|5|1938|2633
-FG5GPWSN3680|3680 Contemporary 5 Lite - Mahogany Grain|Satin|5|1938|2633
-FG5GPWSB3680|3680 Contemporary 5 Lite - Mahogany Grain|Sandblast|5|1938|2633
-FG5GPWRN3680|3680 Contemporary 5 Lite - Mahogany Grain|Rain|5|1938|2633
-FG5GPWF3680|3680 Contemporary 5 Lite - Mahogany Grain|Flemish|5|1938|2633
-FG5GPWR3680|3680 Contemporary 5 Lite - Mahogany Grain|Reeded|5|1938|2633
-FG5HGCLE3068|3068 Contemporary 5 Lite Horizontal - Mahogany Grain|Clear Low E|6|1485|2008
-FG5HGSN3068|3068 Contemporary 5 Lite Horizontal - Mahogany Grain|Satin|6|1485|2008
-FG5HGRN3068|3068 Contemporary 5 Lite Horizontal - Mahogany Grain|Rain|6|1485|2008
-FG5HGSB3068|3068 Contemporary 5 Lite Horizontal - Mahogany Grain|Sandblast|6|1485|2008
-FG6HGCLE3080|3080 Contemporary 6 lite Horiztonal - Mahogany Grain|Clear Low E|6|1728|2337
-FG6HGSN3080|3080 Contemporary 6 lite Horiztonal - Mahogany Grain|Satin|6|1728|2337
-FG6HGRN3080|3080 Contemporary 6 lite Horiztonal - Mahogany Grain|Rain|6|1728|2337
-FG6HGSB3080|3080 Contemporary 6 lite Horiztonal - Mahogany Grain|Sandblast|6|1728|2337
-FG34LE1P3068|3068 3/4 Lite 1 Panel - Mahogany Grain|Clear Low E|7|1165|1685
-FG34SN1P3068|3068 3/4 Lite 1 Panel - Mahogany Grain|Satin|7|1165|1685
-FG34RN1P3068|3068 3/4 Lite 1 Panel - Mahogany Grain|Rain|7|1165|1685
-FG34FL1P3068|3068 3/4 Lite 1 Panel - Mahogany Grain|Flemish|7|1165|1685
-FG34LE1P3080|3080 3/4 Lite 1 Panel - Mahogany Grain|Clear Low E|7|1370|1976
-FG4L1PCBLE2668|2668 4 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
-FG4L1PLE2680|2680 4 Lite TDL 1 Panel - Mahogany Grain|Clear Low E|8|1534|2140
-FG4L1PCBLE2868|2868 4 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
-FG4L1PCBLE3068|3068 4 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
-FG6L1PCBLE2668|2668 6 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
-FG6L1PCBLE3068|3068 6 Lite TDL 1 Panel - Mahogany Grain|Clear Bevel Low E|8|1324|1844
-FGKTX6P3068|3068 6 Panel - Oak Grain|N/A|9|440|963
-FGKTX6P3080|3080 6 Panel - Oak Grain|N/A|9|856|1193
-FG2PSQS3068|3068 2 Panel Square - Mahogany Grain|N/A|9|630|1136
-FG2PSQS3080|3080 2 Panel Square - Mahogany Grain|N/A|9|856|1449
-FG2PAVG3068|3068 2 Panel Arch V-Grooved - Mahogany Grain|N/A|10|630|1136
-FG2PAVG3080|3080 2 Panel Arch V-Grooved - Mahogany Grain|N/A|10|856|1449
-FGCMCBLE3068|3068 Craftsman 6 Lite 2 Panel Shaker - Mahogany Grain|Clear Bevel Low E|10|1252|1877
-FGCMRN3068|3068 Craftsman 6 Lite 2 Panel Shaker - Mahogany Grain|Rain|10|1252|1877
-FGCMF3068|3068 Craftsman 6 Lite 2 Panel Shaker - Mahogany Grain|Flemish|10|1252|1877
-FGCMCBLE3080|3080 Craftsman 6 Lite 2 Panel Shaker - Mahogany Grain|Clear Bevel Low E|10|1615|2387
-FG1CSLLE1268|1268 Contemporary Full Lite Sidelite - Mahogany Grain|Clear Low E|12|725|966
-FGSH3PCMBPSM3068NP|3068 Craftsman 3 Panel Shaker - Smooth|N/A|14|403|null
-FGSHCMLESM3068NP|3068 Craftsman 1 Lite 2 Panel Shaker - Smooth|Clear Low E|14|600|null
-NLFGTCMLESM3068NP|3068 Craftsman Flat Panel - Smooth|Clear Low E|15|610|null
-FGSH2PSQSM3068NP|3068 2 Panel Shaker - Smooth|N/A|16|630|null
-NL2PSQSM2868NP|2868 2 Panel Raised Panel - Smooth|N/A|16|339|null
-FG2PSQSM3068NP|3068 2 Panel Raised Panel - Smooth|N/A|16|630|null
-NLSH1PBSM3068NP|3068 1 Panel Flat Panel - White Brushed Smooth / Smooth|N/A|17|608|null
-NLSM6P2868NB|2868 6 Panel - Smooth|N/A|17|339|null
-NLSM6P3068NB|3068 6 Panel - Smooth|N/A|17|370|null
-NLFGFULLLE2068NB|2068 Full Lite - White Brushed Smooth|Clear Low E|18|608|null
-NLFGFULLLE2668NB|2668 Full Lite - White Brushed Smooth|Clear Low E|18|608|null
-NLFGFULLLE3068NB|3068 Full Lite - White Brushed Smooth|Clear Low E|18|608|null
-NLFGFULLLEMBR2068NB|2068 Full Lite with Mini Blind - White Brushed Smooth|Clear Low E|18|923|null
-NLFG34LE2668NB|2668 3/4 Lite 1 Panel - White Brushed Smooth|Clear Low E|19|685|null
-NLFG34LE3068NB|3068 3/4 Lite 1 Panel - White Brushed Smooth|Clear Low E|19|685|null
-NLSMFL2068NB|2068 Flush - Smooth Skin|N/A|19|370|null
-NLFG34SLLE1068|1068 3/4 Lite 1 Panel Sidelite - White Brushed Smooth|Clear Low E|20|581|null
-NLFGFULLSLLE1068|1068 Full Lite Sidelite - White Brushed Smooth|Clear Low E|20|573|null`;
+        const NET_MULTIPLIER = 0.48;
+        let quoteItems = []; // Array to store multiple doors/items
 
-        const generatedFiberglassItems = rawFiberglassTSV.trim().split('\n').map(line => {
-            const [sku, desc, glass, page, unfinStr, prefinStr] = line.split('|');
-            const sizeMatch = sku.match(/\d{4,5}/);
-            const size = sizeMatch ? sizeMatch[0] : (desc.match(/^\d{4,5}/) ? desc.match(/^\d{4,5}/)[0] : "");
-            return {
-                sku: sku.trim(), size: size.trim(), desc: desc.trim(), glass: glass.trim(), page: page.trim(),
-                unfin: unfinStr.trim() === "null" ? null : parseInt(unfinStr.trim(), 10),
-                prefin: prefinStr.trim() === "null" ? null : parseInt(prefinStr.trim(), 10)
+        const modelsDB = {
+            "Mahogany": [
+                { "name": "Contemporary 1 Lite Vertical", "page": "4", "price": 1728.0, "sizes": ["3080"], "glass": ["Clear Low E", "Reeded", "Sandblast w/1 Clear Border", "Satin"] },
+                { "name": "Contemporary 3 Lite", "page": "4", "price": 1485.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Satin"] },
+                { "name": "Contemporary 4 Lite", "page": "5", "price": 1485.0, "sizes": ["3068"], "glass": ["Clear Low E", "Rain", "Reeded", "Sandblast w/1\" Clear Border", "Satin"] },
+                { "name": "Contemporary 5 Lite", "page": "5", "price": 1728.0, "sizes": ["3080", "3680"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Sandblast w/1\" Border", "Satin"] },
+                { "name": "Contemporary 5 Lite Horizontal", "page": "6", "price": 1485.0, "sizes": ["3068"], "glass": ["Clear Low E", "Rain", "Sandblast w/1\" Clear Border", "Satin"] },
+                { "name": "Contemporary 6 Lite Horizontal", "page": "6", "price": 1728.0, "sizes": ["3080"], "glass": ["Clear Low E", "Rain", "Sandblast w/1\" Clear Border", "Satin"] },
+                { "name": "3/4 Lite 1 Panel", "page": "7", "price": 1165.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Satin"] },
+                { "name": "4 Lite TDL 1 Panel", "page": "8", "price": 1324.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Bevel Low E", "Clear Low E", "Flemish", "Rain"] },
+                { "name": "6 Lite TDL 1 Panel", "page": "8", "price": 1324.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080", "3680"], "glass": ["Clear Bevel Low E", "Clear Low E", "Flemish", "Rain"] },
+                { "name": "2 Panel Square", "page": "9", "price": 630.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                { "name": "2 Panel Arch, V-Grooved", "page": "10", "price": 630.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                { "name": "Craftsman 6 Lite 2 Panel Shaker", "page": "10", "price": 1252.0, "sizes": ["3068", "3080"], "glass": ["Clear Bevel Low E", "Flemish", "Rain"] },
+                { "name": "2 Panel Arch V-Grooved w/ Speakeasy", "page": "11", "price": 953.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Wood"] },
+                { "name": "Contemporary Full Lite Sidelite", "page": "12", "price": 725.0, "sizes": ["1268", "1280"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Satin"] }
+            ],
+            "Oak": [
+                { "name": "6 Panel", "page": "9", "price": 440.0, "sizes": ["3068", "3080"], "glass": ["nan"] }
+            ],
+            "Smooth": [
+                { "name": "Craftsman 3 Panel Shaker", "page": "14", "price": 403.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                { "name": "Craftsman 1 Lite 2 Panel Shaker", "page": "14", "price": 600.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] },
+                { "name": "Craftsman Flat Panel", "page": "15", "price": 610.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] },
+                { "name": "Half Lite 2 Panel", "page": "15", "price": 685.0, "sizes": ["2868"], "glass": ["Clear Low E"] },
+                { "name": "2 Panel Shaker", "page": "16", "price": 403.0, "sizes": ["2868", "2880", "3068", "3080"], "glass": ["nan"] },
+                { "name": "2 Panel Raised Panel", "page": "16", "price": 339.0, "sizes": ["2868", "3068", "3080"], "glass": ["nan"] },
+                { "name": "1 Panel Flat Panel", "page": "17", "price": 608.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                { "name": "6 Panel", "page": "17", "price": 339.0, "sizes": ["2868", "2880", "3068", "3080"], "glass": ["nan"] },
+                { "name": "Full Lite", "page": "18", "price": 608.0, "sizes": ["2068", "2080", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E", "Translucent"] },
+                { "name": "Full Lite with Mini Blind", "page": "18", "price": 923.0, "sizes": ["2068", "2080", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E"] },
+                { "name": "3/4 Lite 1 Panel", "page": "19", "price": 685.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Translucent"] },
+                { "name": "3/4 Lite 1 Panel with Mini Blind", "page": "19", "price": 996.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E"] },
+                { "name": "Flush", "page": "19", "price": 370.0, "sizes": ["2068", "2080", "21068", "21080", "2468", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["nan"] },
+                { "name": "3/4 Lite 1 Panel Sidelite", "page": "20", "price": 581.0, "sizes": ["1068", "1080", "1268", "1280"], "glass": ["Clear Low E"] },
+                { "name": "Full Lite Sidelite", "page": "20", "price": 573.0, "sizes": ["1068", "1080", "1268", "1280"], "glass": ["Clear Low E"] }
+            ],
+            "Fir": [
+                { "name": "Craftsman 3 Panel Shaker", "page": "14", "price": 450.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                { "name": "Craftsman 1 Lite 2 Panel Shaker", "page": "14", "price": 660.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E"] },
+                { "name": "Craftsman Flat Panel", "page": "15", "price": 671.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] }
+            ]
+        };
+
+        let currentCollection = 'Mahogany';
+        let currentlySelectedModel = null;
+
+        function decodeSize(code) {
+            const map = {
+                '1068': { w: 12, h: 80, label: '1\'0" x 6\'8"' },
+                '1080': { w: 12, h: 96, label: '1\'0" x 8\'0"' },
+                '1268': { w: 14, h: 80, label: '1\'2" x 6\'8"' },
+                '1280': { w: 14, h: 96, label: '1\'2" x 8\'0"' },
+                '2068': { w: 24, h: 80, label: '2\'0" x 6\'8"' },
+                '2080': { w: 24, h: 96, label: '2\'0" x 8\'0"' },
+                '2468': { w: 28, h: 80, label: '2\'4" x 6\'8"' },
+                '2668': { w: 30, h: 80, label: '2\'6" x 6\'8"' },
+                '2680': { w: 30, h: 96, label: '2\'6" x 8\'0"' },
+                '2868': { w: 32, h: 80, label: '2\'8" x 6\'8"' },
+                '2880': { w: 32, h: 96, label: '2\'8" x 8\'0"' },
+                '21068': { w: 34, h: 80, label: '2\'10" x 6\'8"' },
+                '21080': { w: 34, h: 96, label: '2\'10" x 8\'0"' },
+                '3068': { w: 36, h: 80, label: '3\'0" x 6\'8"' },
+                '3080': { w: 36, h: 96, label: '3\'0" x 8\'0"' },
+                '3680': { w: 42, h: 96, label: '3\'6" x 8\'0"' }
             };
-        });
+            return map[code] || { w: 36, h: 80, label: code };
+        }
 
-        const rawHardwoodTSV = `M1LVCLE3080|3080 Contemporary 1 Lite Vertical|Clear Low E|8|mahogany
-M1LVCLE3680|3680 Contemporary 1 Lite Vertical|Clear Low E|8|mahogany
-M3GPWCLE3068|3068 Contemporary 3 Lite|Clear Low E|8|mahogany
-M3GPWCLE2880|2880 Contemporary 3 Lite|Clear Low E|8|mahogany
-M3GPWCLE3080|3080 Contemporary 3 Lite|Clear Low E|8|mahogany
-M3GPWCLE3680|3680 Contemporary 3 Lite|Clear Low E|8|mahogany
-M4GPWCLE3068|3068 Contemporary 4 Lite|Clear Low E|8|mahogany
-M5GPWCLE2880|2880 Contemporary 5 Lite|Clear Low E|8|mahogany
-M5GPWCLE3080|3080 Contemporary 5 Lite|Clear Low E|8|mahogany
-M5GPWCLE3680|3680 Contemporary 5 Lite|Clear Low E|8|mahogany
-M5HGC3068|3068 Contemporary 5 Lite Horizontal|Clear Low E|9|mahogany
-M6HGC3080|3080 Contemporary 6 Lite Horizontal|Clear Low E|9|mahogany
-M7P3080|3080 Contemporary 7 Panel|None|9|mahogany
-M7P3680|3680 Contemporary 7 Panel|None|9|mahogany
-M1LCSLCLE1268|1268 Contemporary Full Lite Sidelite|Clear Low E|9|mahogany
-M3GPWNSR2880L|2880 Contemporary 3 Lite Narrow (L)|Reeded|10|mahogany
-M3GPWNSR3080L|3080 Contemporary 3 Lite Narrow (L)|Reeded|10|mahogany
-M4GPWNSR3080L|3080 Contemporary 4 Lite Narrow (L)|Reeded|10|mahogany
-M5GPWNSR3080L|3080 Contemporary 5 Lite Narrow (L)|Reeded|11|mahogany
-M3LCTLCLE1P3080|3080 3 Lite Circle Lite RM|Clear Low E|14|tdl
-M3LSQTLCLE1P3080|3080 3 Lite 1 Panel RM|Clear Low E|14|tdl
-M4LAT5080|5080 4 Lite Arch Top Double RM|Clear Bevel Low E|14|tdl
-M4L1P2668|2668 4 Lite 1 Panel RM|Clear Bevel Low E|15|tdl
-M4L1P2868|2868 4 Lite 1 Panel RM|Clear Bevel Low E|15|tdl
-M4L1P3068|3068 4 Lite 1 Panel RM|Clear Bevel Low E|15|tdl
-M4L1P2668NRM|2668 4 Lite 1 Panel NRM|Clear Bevel Low E|15|tdl
-M4L1P3068NRM|3068 4 Lite 1 Panel NRM|Clear Bevel Low E|15|tdl
-M4L1P3080NRM|3080 4 Lite 1 Panel NRM|Clear Bevel Low E|15|tdl
-M6L1P3068|3068 6 Lite 1 Panel RM|Clear Bevel Low E|17|tdl
-M6L1P3080|3080 6 Lite 1 Panel RM|Clear Bevel Low E|17|tdl
-M6L1P3068NRM|3068 6 Lite 1 Panel NRM|Clear Bevel Low E|17|tdl
-M6LAT3080|3080 6 Lite Arch Top RM|Clear Bevel Low E|16|tdl
-MCM4LCBLE3080S|3080 Craftsman 4 Lite|Clear Bevel Low E|18|tdl
-MCMCBLE3068|3068 Craftsman 6 Lite|Clear Bevel Low E|19|tdl
-MCMCBLE3080|3080 Craftsman 6 Lite|Clear Bevel Low E|19|tdl
-M9LM3068|3068 Marginal 9 Lite|Clear Bevel Low E|20|tdl
-M6P3068|3068 6 Panel NRM|None|24|mahogany
-M6PRM3068|3068 6 Panel RM|None|24|mahogany
-M6PRM3080|3080 6 Panel RM|None|24|mahogany
-MPIP3068|3068 Panel In Panel RM|None|24|mahogany
-MCA3068|3068 Center Arch RM|None|24|mahogany
-M2PSQS3080|3080 2 Panel Square Smooth|None|25|mahogany
-M2PA3068|3068 2 Panel Arch V-Grooved|None|26|mahogany
-M2PA3080|3080 2 Panel Arch V-Grooved|None|26|mahogany
-M2PASEC3068|3068 2 Panel Arch V-Grooved Speakeasy|Clear IG|26|mahogany
-MFULLPECP3068|3068 Full Lite RM - Pecos|Pecos|28|mahogany
-MFULLF3068|3068 Full Lite RM - Flat Glass|Open|28|mahogany
-M343068|3068 3/4 Lite RM|Open|29|mahogany
-M233068|3068 2/3 Lite RM|Open|30|mahogany
-M23A3068|3068 2/3 Arch Lite RM|Open|31|mahogany
-M23ACRDC3068|3068 2/3 Arch Lite Iron Grille - Cordoba|Clear Low E|35|mahogany
-M23AWHIC3068|3068 2/3 Arch Lite Iron Grille - Whitney|Clear Low E|35|mahogany
-M34AVIC3068|3068 3/4 Lite Iron Grille - Avignon|Clear Low E|38|mahogany
-M34BARC3068|3068 3/4 Lite Iron Grille - Barcelona|Clear Low E|38|mahogany
-M34CRDC3068|3068 3/4 Lite Iron Grille - Cordoba|Clear Low E|38|mahogany
-M34STGC3068|3068 3/4 Lite Iron Grille - Santiago|Clear Low E|39|mahogany
-M34SIEC3068|3068 3/4 Lite Iron Grille - Sienna|Clear Low E|39|mahogany
-M34WHIC3068|3068 3/4 Lite Iron Grille - Whitney|Clear Low E|39|mahogany
-MFULLAVIC3068|3068 Full Lite Iron Grille - Avignon|Clear Low E|40|mahogany
-MFULLCRDC3068|3068 Full Lite Iron Grille - Cordoba|Clear Low E|40|mahogany
-KA6L1P3068|3068 6 Lite 1 Panel RM (Alder)|Clear Bevel Low E|42|knotty_alder
-KA2PA3068|3068 2 Panel Arch V-Grooved (Alder)|None|46|knotty_alder
-KA2PA3080|3080 2 Panel Arch V-Grooved (Alder)|None|46|knotty_alder
-KACMCBLE3068|3068 Craftsman 6 Lite (Alder)|Clear Bevel Low E|45|knotty_alder
-BDZ3684|3684 Z Profile Barn Door|None|58|barn_door`;
-
-        const parsedHardwood = { mahogany: [], tdl: [], knotty_alder: [], barn_door: [], contemporary_wood: [] };
-        rawHardwoodTSV.trim().split('\n').forEach(line => {
-            const [sku, desc, glass, page, cat] = line.split('|');
-            const sizeMatch = sku.match(/\d{4,5}/);
-            const size = sizeMatch ? sizeMatch[0] : (desc.match(/^\d{4,5}/) ? desc.match(/^\d{4,5}/)[0] : "");
-            if (parsedHardwood[cat]) {
-                parsedHardwood[cat].push({ sku: sku.trim(), size: size.trim(), desc: desc.trim(), glass: glass.trim(), page: page.trim(), unfin: 0, prefin: 0 });
-            }
-        });
-
-        const VENDOR_CATALOG = {
-            metadata: { effectiveDate: "2026-06-01", netMultiplier: 0.48, vendorName: "Hoelscher Weatherstrip / Hoelscher Doors" },
-            collections: {
-                fiberglass: { name: "Fiberglass Collection (Smooth/Grain)", items: generatedFiberglassItems },
-                mahogany: { name: "Wood Mahogany Legacy & Panel", items: parsedHardwood.mahogany },
-                tdl: { name: "True Divided Lite Collection (Wood)", items: parsedHardwood.tdl },
-                knotty_alder: { name: "Wood Knotty Alder Collection", items: parsedHardwood.knotty_alder },
-                contemporary_wood: { name: "Contemporary Wood Collection", items: parsedHardwood.contemporary_wood },
-                barn_door: { name: "Barn Door Collection", items: parsedHardwood.barn_door }
-            },
-            prehungComponents: {
-                prehung_single: { name: "Prehung Single Door Kit", listPrice: 656, jambUpcharge6916: 63 },
-                prehung_double: { name: "Prehung Double Door Kit", listPrice: 846, jambUpcharge6916: 63 }
-            }
+        window.onload = () => {
+            setCollection('Mahogany');
+            document.getElementById('prop-date').innerText = new Date().toISOString().split('T')[0];
         };
 
-        const materialMap = {
-            fiberglass: ['fiberglass'],
-            wood: ['mahogany', 'tdl', 'knotty_alder', 'contemporary_wood', 'barn_door']
-        };
-
-        const skuSearch = document.getElementById('skuSearch');
-        const searchFeedback = document.getElementById('searchFeedback');
-        const materialSelect = document.getElementById('materialSelect');
-        const collectionSelect = document.getElementById('collectionSelect');
-        const sizeSelect = document.getElementById('sizeSelect');
-        const doorStyleSelect = document.getElementById('doorStyleSelect');
-        const glassSelect = document.getElementById('glassSelect');
-        const finishSelect = document.getElementById('finishSelect');
-        const stainGroup = document.getElementById('stainGroup');
-        const stainSelect = document.getElementById('stainSelect');
-        const qtyInput = document.getElementById('qtyInput');
-        const marginInput = document.getElementById('marginInput');
-        const frameSelect = document.getElementById('frameSelect');
-        const jambSelect = document.getElementById('jambSelect');
-        const clientModeToggle = document.getElementById('clientModeToggle');
-        const resetBtn = document.getElementById('resetBtn');
-        const lineItemsContainer = document.getElementById('lineItemsContainer');
-        const totalNetDisplay = document.getElementById('totalNetDisplay');
-        const totalListDisplay = document.getElementById('totalListDisplay');
-        const grandTotalDisplay = document.getElementById('grandTotalDisplay');
-        const netCostContainer = document.getElementById('netCostContainer');
-        const copyQuoteBtn = document.getElementById('copyQuoteBtn');
-
-        document.getElementById('quoteDateDisplay').innerText = `Date: ${new Date().toLocaleDateString()}`;
-
-        let currentCollection = '';
-        let currentSize = '';
-        let selectedItem = null;
-        let searchTimeout = null;
-
-        function formatCurrency(val) { return val.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); }
-
-        function initApp() {
-            resetQuoteForm();
-            materialSelect.addEventListener('change', () => populateCollections());
-            collectionSelect.addEventListener('change', (e) => { currentCollection = e.target.value; populateSizes(); });
-            sizeSelect.addEventListener('change', (e) => { currentSize = e.target.value; populateDoors(); });
-            doorStyleSelect.addEventListener('change', () => populateGlassOptions());
-            glassSelect.addEventListener('change', handleGlassSelection);
-            finishSelect.addEventListener('change', handleFinishChange);
-            stainSelect.addEventListener('change', calculateAndRenderQuote);
-            qtyInput.addEventListener('input', calculateAndRenderQuote);
-            marginInput.addEventListener('input', calculateAndRenderQuote);
-            frameSelect.addEventListener('change', (e) => { jambSelect.disabled = (e.target.value === 'none'); calculateAndRenderQuote(); });
-            jambSelect.addEventListener('change', calculateAndRenderQuote);
+        function setCollection(collection) {
+            currentCollection = collection;
             
-            clientModeToggle.addEventListener('change', (e) => {
-                document.body.classList.toggle('client-mode', e.target.checked);
+            ['Mahogany', 'Oak', 'Smooth', 'Fir'].forEach(col => {
+                document.getElementById('col-' + col).classList.remove('active');
             });
+            document.getElementById('col-' + collection).classList.add('active');
+
+            const modelSelect = document.getElementById('doorModel');
+            modelSelect.innerHTML = '';
             
-            resetBtn.addEventListener('click', resetQuoteForm);
-            skuSearch.addEventListener('input', (e) => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => handleSkuSearch(e.target.value), 300); });
+            modelsDB[collection].forEach((model, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                const pageLabel = model.page ? ` (Pg. ${model.page})` : '';
+                opt.innerText = `${model.name}${pageLabel}`;
+                modelSelect.appendChild(opt);
+            });
+
+            populateOptions();
         }
 
-        function resetQuoteForm() {
-            skuSearch.value = ''; searchFeedback.className = 'search-feedback'; searchFeedback.innerText = '';
+        function populateOptions() {
+            const modelIndex = document.getElementById('doorModel').value;
+            currentlySelectedModel = modelsDB[currentCollection][modelIndex];
             
-            // Revert to pristine blank states
-            materialSelect.value = '';
-            collectionSelect.innerHTML = '<option value="" disabled selected>Select Collection...</option>';
-            sizeSelect.innerHTML = '<option value="" disabled selected>Select Size...</option>';
-            doorStyleSelect.innerHTML = '<option value="" disabled selected>Select Base Style...</option>';
-            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>';
-            
-            qtyInput.value = 1; marginInput.value = 30; frameSelect.value = 'none';
-            jambSelect.disabled = true; jambSelect.value = '4_9_16';
-            finishSelect.value = 'unfinished'; handleFinishChange();
-            
-            currentCollection = ''; currentSize = ''; selectedItem = null;
-            calculateAndRenderQuote();
-        }
+            // 1. Setup Sizes
+            const sizeSelect = document.getElementById('doorSize');
+            sizeSelect.innerHTML = '';
+            currentlySelectedModel.sizes.forEach(sizeCode => {
+                const opt = document.createElement('option');
+                opt.value = sizeCode;
+                const dims = decodeSize(sizeCode);
+                opt.innerText = `${dims.label} (${dims.w}" x ${dims.h}")`;
+                sizeSelect.appendChild(opt);
+            });
 
-        function populateCollections() {
-            const mat = materialSelect.value;
-            if (!mat) return;
-            const cols = materialMap[mat].filter(c => VENDOR_CATALOG.collections[c].items.length > 0);
-            collectionSelect.innerHTML = '<option value="" disabled selected>Select Collection...</option>' + 
-                cols.map(c => `<option value="${c}">${VENDOR_CATALOG.collections[c].name}</option>`).join('');
-            
-            currentCollection = '';
-            sizeSelect.innerHTML = '<option value="" disabled selected>Select Size...</option>';
-            doorStyleSelect.innerHTML = '<option value="" disabled selected>Select Base Style...</option>';
-            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>';
-            selectedItem = null;
-            calculateAndRenderQuote();
-        }
+            // 2. Setup Glass (Hide if solid)
+            const validGlass = currentlySelectedModel.glass.filter(g => g !== 'nan' && g !== 'None' && g !== 'Configured');
+            const glassContainer = document.getElementById('glassContainer');
+            const glassSelect = document.getElementById('doorGlass');
+            glassSelect.innerHTML = '';
 
-        function populateSizes() {
-            if (!currentCollection) return;
-            const items = VENDOR_CATALOG.collections[currentCollection].items;
-            const sizes = [...new Set(items.map(item => item.size))].sort((a,b) => parseInt(a) - parseInt(b));
-            
-            sizeSelect.innerHTML = '<option value="" disabled selected>Select Size...</option>' + 
-                sizes.map(s => `<option value="${s}">${s} Nominal</option>`).join('');
-            
-            currentSize = '';
-            doorStyleSelect.innerHTML = '<option value="" disabled selected>Select Base Style...</option>';
-            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>';
-            selectedItem = null;
-            calculateAndRenderQuote();
-        }
-
-        function populateDoors() {
-            if (!currentSize) return;
-            const items = VENDOR_CATALOG.collections[currentCollection].items.filter(item => item.size === currentSize);
-            const uniqueStyles = [...new Set(items.map(item => item.desc))];
-            
-            doorStyleSelect.innerHTML = '<option value="" disabled selected>Select Base Style...</option>' + 
-                uniqueStyles.map(desc => {
-                    const firstMatch = items.find(i => i.desc === desc);
-                    return `<option value="${desc}">[Pg ${firstMatch.page || 'N/A'}] ${desc}</option>`;
-                }).join('');
-                
-            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>';
-            selectedItem = null;
-            calculateAndRenderQuote();
-        }
-
-        function populateGlassOptions() {
-            const currentStyle = doorStyleSelect.value;
-            if (!currentStyle) return;
-            
-            const items = VENDOR_CATALOG.collections[currentCollection].items.filter(item => item.size === currentSize && item.desc === currentStyle);
-            
-            glassSelect.innerHTML = '<option value="" disabled selected>Select Glass...</option>' + 
-                items.map(item => `<option value="${item.glass}">${item.glass}</option>`).join('');
-                
-            selectedItem = null;
-            calculateAndRenderQuote();
-        }
-
-        function handleGlassSelection(e) {
-            const glass = e.target.value;
-            selectedItem = VENDOR_CATALOG.collections[currentCollection].items.find(i => i.desc === doorStyleSelect.value && i.glass === glass && i.size === currentSize);
-            updateFinishOptions(); 
-            calculateAndRenderQuote();
-        }
-
-        function handleFinishChange() {
-            stainGroup.classList.toggle('hidden', finishSelect.value !== 'prefinished');
-            calculateAndRenderQuote();
-        }
-
-        function updateFinishOptions() {
-            if (!selectedItem) return;
-            const unfin = finishSelect.querySelector('option[value="unfinished"]');
-            const prefin = finishSelect.querySelector('option[value="prefinished"]');
-            unfin.disabled = (selectedItem.unfin === null && selectedItem.unfin !== 0);
-            prefin.disabled = (selectedItem.prefin === null);
-            if (unfin.disabled && finishSelect.value === "unfinished") { finishSelect.value = "prefinished"; handleFinishChange(); }
-            if (prefin.disabled && finishSelect.value === "prefinished") { finishSelect.value = "unfinished"; handleFinishChange(); }
-        }
-
-        function handleSkuSearch(queryText) {
-            const query = queryText.trim().toUpperCase();
-            searchFeedback.className = 'search-feedback'; searchFeedback.innerText = '';
-            if (query.length < 3) return;
-            
-            let exact = [], partial = [];
-            Object.entries(VENDOR_CATALOG.collections).forEach(([colKey, colData]) => {
-                colData.items.forEach(item => {
-                    if (item.sku.toUpperCase() === query) exact.push({item, colKey});
-                    else if (item.sku.toUpperCase().includes(query) || item.desc.toUpperCase().includes(query)) partial.push({item, colKey});
+            if (validGlass.length > 0) {
+                glassContainer.style.display = 'block';
+                validGlass.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g;
+                    opt.innerText = g;
+                    glassSelect.appendChild(opt);
                 });
-            });
+            } else {
+                glassContainer.style.display = 'none';
+                const opt = document.createElement('option');
+                opt.value = 'Solid Panel';
+                opt.innerText = 'Solid Panel';
+                glassSelect.appendChild(opt);
+            }
             
-            const foundObj = exact[0] || partial[0];
+            // 3. Setup Add-ons (Hide unless specific doors)
+            const addOnContainer = document.getElementById('addOnContainer');
+            const addOnsSelect = document.getElementById('addOns');
+            addOnsSelect.innerHTML = '<option value="0">None</option>';
             
-            if (foundObj) {
-                const {item, colKey} = foundObj;
-                searchFeedback.className = 'search-feedback success'; searchFeedback.innerText = `✓ Match Found: [Pg ${item.page || 'N/A'}] [${item.sku}]`;
-                
-                const foundMat = materialMap.wood.includes(colKey) ? 'wood' : 'fiberglass';
-                if (materialSelect.value !== foundMat) { 
-                    materialSelect.value = foundMat; 
+            if (currentlySelectedModel.name === "2 Panel Arch V-Grooved w/ Speakeasy") {
+                addOnsSelect.innerHTML += `
+                    <option value="194">Standard Iron Mask (+$194 List)</option>
+                    <option value="194">Balfour Iron Mask (+$194 List)</option>
+                    <option value="194">Windsor Iron Mask (+$194 List)</option>
+                `;
+                addOnContainer.style.display = 'block';
+            } else if (currentlySelectedModel.name === "3/4 Lite 1 Panel") {
+                addOnsSelect.innerHTML += `
+                    <option value="440">Full Wrought Iron Grille (+$440 List)</option>
+                `;
+                addOnContainer.style.display = 'block';
+            } else {
+                addOnContainer.style.display = 'none';
+            }
+            
+            runQuoteEngine();
+        }
+
+        function formatDimStr(dim) {
+            let whole = Math.floor(dim);
+            let frac = dim % 1;
+            let fracStr = '';
+            if (frac === 0.5) fracStr = '1/2"';
+            else if (frac === 0.25) fracStr = '1/4"';
+            else if (frac === 0.75) fracStr = '3/4"';
+            else if (frac === 0.125) fracStr = '1/8"';
+            else if (frac === 0.875) fracStr = '7/8"';
+            
+            return fracStr === '' ? `${whole}"` : `${whole} ${fracStr}`;
+        }
+
+        function runQuoteEngine() {
+            if (!currentlySelectedModel) return;
+            const baseListPrice = currentlySelectedModel.price;
+            
+            const sizeCode = document.getElementById('doorSize').value;
+            const dims = decodeSize(sizeCode);
+            const nomW = dims.w;
+            const nomH = dims.h;
+            
+            const finish = document.getElementById('doorFinish').value;
+            const isUnfinished = finish.includes('Unfinished');
+            
+            const layout = document.getElementById('systemLayout').value;
+            const isDouble = layout.includes('Double');
+            const isSlabOnly = layout === 'Slab Only';
+            
+            const jamb = document.getElementById('jambDepth').value;
+            const margin = parseFloat(document.getElementById('marginSlider').value) / 100;
+
+            const addOnsSelect = document.getElementById('addOns');
+            let addOnsNet = 0;
+            let addonsDesc = '';
+            if (document.getElementById('addOnContainer').style.display !== 'none' && addOnsSelect.value !== "0") {
+                addOnsNet = parseFloat(addOnsSelect.value) * NET_MULTIPLIER;
+                addonsDesc = addOnsSelect.options[addOnsSelect.selectedIndex].text;
+            }
+                            
+            const laborSelect = document.getElementById('installLabor');
+            let laborNet = 0;
+            let laborDesc = '';
+            if(laborSelect.value !== "0") {
+                laborNet = parseFloat(laborSelect.value);
+                laborDesc = laborSelect.options[laborSelect.selectedIndex].text;
+            }
+
+            const alertBox = document.getElementById('prehangAlert');
+            let prehangCost = 0;
+            let jambDesc = '';
+
+            // Handle Slab Only Override
+            if (isSlabOnly) {
+                alertBox.style.display = 'none';
+                prehangCost = 0;
+                jambDesc = "N/A (Slab Only - No Frame)";
+                document.getElementById('doorHanding').value = "N/A (Slab)";
+            } else {
+                alertBox.style.display = 'block';
+                if (isUnfinished) {
+                    alertBox.className = "p-4 rounded border text-sm mt-4 bg-amber-50 border-amber-200 text-amber-800";
+                    alertBox.innerHTML = `<strong><i class="fas fa-tools mr-2"></i> IN-HOUSE BUILD SELECTED</strong><br>Since door is <b>Unfinished</b>, frame will be prehung <b>IN-HOUSE</b> using SimplyDoors Primed White Frame rates ($125-$340).`;
+                    
+                    if (!isDouble && nomH === 80) prehangCost = 125;
+                    if (!isDouble && nomH === 96) prehangCost = 150;
+                    if (isDouble && nomH === 80) prehangCost = 320;
+                    if (isDouble && nomH === 96) prehangCost = 340;
+                    
+                    if (jamb === '6 9/16') prehangCost += 10;
+                    jambDesc = `In-House Primed White (${jamb}")`;
+                } else {
+                    alertBox.className = "p-4 rounded border text-sm mt-4 bg-blue-50 border-blue-200 text-blue-800";
+                    alertBox.innerHTML = `<strong><i class="fas fa-truck mr-2"></i> VENDOR PREHANG</strong><br>Prefinished doors are assembled directly by Hoelscher using matching composite frames.`;
+                    
+                    let vendorListFrame = isDouble ? 800 : 450;
+                    prehangCost = vendorListFrame * NET_MULTIPLIER;
+                    jambDesc = `Vendor Composite Frame (${jamb}")`;
                 }
-                
-                // Directly bypass the manual step-by-step empty states for instant population
-                const cols = materialMap[foundMat].filter(c => VENDOR_CATALOG.collections[c].items.length > 0);
-                collectionSelect.innerHTML = cols.map(c => `<option value="${c}">${VENDOR_CATALOG.collections[c].name}</option>`).join('');
-                
-                currentCollection = colKey; 
-                collectionSelect.value = colKey; 
-                
-                const itemsCol = VENDOR_CATALOG.collections[currentCollection].items;
-                const sizes = [...new Set(itemsCol.map(i => i.size))].sort((a,b) => parseInt(a) - parseInt(b));
-                sizeSelect.innerHTML = sizes.map(s => `<option value="${s}">${s} Nominal</option>`).join('');
-                
-                currentSize = item.size; 
-                sizeSelect.value = currentSize;
-                
-                const itemsSize = itemsCol.filter(i => i.size === currentSize);
-                const uniqueStyles = [...new Set(itemsSize.map(i => i.desc))];
-                doorStyleSelect.innerHTML = uniqueStyles.map(desc => {
-                    const firstMatch = itemsSize.find(i => i.desc === desc);
-                    return `<option value="${desc}">[Pg ${firstMatch.page || 'N/A'}] ${desc}</option>`;
-                }).join('');
-                
-                doorStyleSelect.value = item.desc;
-                
-                const itemsStyle = itemsSize.filter(i => i.desc === item.desc);
-                glassSelect.innerHTML = itemsStyle.map(i => `<option value="${i.glass}">${i.glass}</option>`).join('');
-                glassSelect.value = item.glass;
-                
-                selectedItem = item; 
-                updateFinishOptions(); 
-                calculateAndRenderQuote();
-            } else { 
-                searchFeedback.className = 'search-feedback error'; searchFeedback.innerText = `No catalog match found for "${queryText}"`; 
             }
+
+            let slabListTotal = isDouble ? baseListPrice * 2 : baseListPrice;
+            const slabNet = slabListTotal * NET_MULTIPLIER;
+            
+            let sideliteNet = 0;
+            if (layout === 'Single + 1 SL') sideliteNet = 725 * NET_MULTIPLIER;
+            if (layout === 'Single + 2 SL') sideliteNet = 1450 * NET_MULTIPLIER;
+
+            const totalDealerCost = slabNet + sideliteNet + prehangCost + addOnsNet + laborNet;
+            const retailPrice = totalDealerCost / (1 - margin);
+            const grossProfit = retailPrice - totalDealerCost;
+
+            // UI Updates
+            document.getElementById('marginDisplay').innerText = `${(margin * 100).toFixed(0)}%`;
+            document.getElementById('costSlab').innerText = `$${slabNet.toFixed(2)}`;
+            document.getElementById('costSidelite').innerText = `$${sideliteNet.toFixed(2)}`;
+            document.getElementById('costPrehang').innerText = `$${prehangCost.toFixed(2)}`;
+            
+            const summaryAddonsRow = document.getElementById('summary-addons-row');
+            if (addOnsNet > 0) {
+                summaryAddonsRow.style.display = 'flex';
+                document.getElementById('costAddons').innerText = `$${addOnsNet.toFixed(2)}`;
+            } else {
+                summaryAddonsRow.style.display = 'none';
+            }
+            
+            document.getElementById('costLabor').innerText = `$${laborNet.toFixed(2)}`;
+            document.getElementById('costTotal').innerText = `$${totalDealerCost.toFixed(2)}`;
+            document.getElementById('priceRetail').innerText = `$${retailPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            let unitStr, roStr;
+
+            if (isSlabOnly) {
+                let slabW = nomW - 0.25;
+                let slabH = nomH - 0.75;
+                if (isDouble) slabW = (nomW * 2) - 0.25; // standard double slab calc 
+                
+                unitStr = `${formatDimStr(slabW)} x ${formatDimStr(slabH)} (Slab Size)`;
+                roStr = "N/A (Slab Only)";
+            } else {
+                let unitW = nomW + 1.5;
+                let unitH = nomH + 2;
+                
+                if (isDouble) unitW = (nomW * 2) + 2.125;
+                if (layout === 'Single + 1 SL') unitW += 13.5;
+                if (layout === 'Single + 2 SL') unitW += 27.0;
+
+                const roW = unitW + 1.0;
+                const roH = unitH + 0.75;
+
+                unitStr = `${formatDimStr(unitW)} x ${formatDimStr(unitH)}`;
+                roStr = `${formatDimStr(roW)} x ${formatDimStr(roH)}`;
+            }
+
+            document.getElementById('sumUnitSize').innerText = unitStr;
+            document.getElementById('sumRO').innerText = roStr;
+
+            const glass = document.getElementById('doorGlass').value;
+            const sku = `SD-${currentCollection.substring(0,3).toUpperCase()}-${sizeCode}-${isDouble ? 'DBL' : 'SGL'}`;
+            document.getElementById('sku-display').innerText = `SKU: ${sku}`;
+
+            window.currentQuoteState = {
+                sku, unitStr, roStr, jambDesc, retailPrice, 
+                modelName: currentlySelectedModel.name, 
+                collection: currentCollection,
+                layout, glass, finish, addonsDesc, laborDesc
+            };
         }
 
-        function calculateAndRenderQuote() {
-            if (!selectedItem) {
-                lineItemsContainer.innerHTML = `<div style="text-align:center; padding: 2rem; color: var(--text-muted); border: 1px dashed var(--border); border-radius: 8px;">Please select a material, collection, size, style, and glass type to generate a quote.</div>`;
-                totalNetDisplay.innerText = "$0.00"; totalListDisplay.innerText = "$0.00"; grandTotalDisplay.innerText = "$0.00"; return;
-            }
-            
-            const finishType = finishSelect.value;
-            let finishLabel = finishType === 'prefinished' ? `Pre-Finished (${stainSelect.value})` : 'Unfinished';
-            
-            const listPrice = (finishType === 'prefinished' && selectedItem.prefin !== null) ? selectedItem.prefin : selectedItem.unfin;
-            const isTBD = (listPrice === 0 || listPrice === null);
-            
-            const qty = Math.max(1, parseInt(qtyInput.value) || 1);
-            const slabMultiplier = (frameSelect.value === 'prehung_double') ? 2 : 1;
-            const slabQty = qty * slabMultiplier;
-            
-            const netMult = VENDOR_CATALOG.metadata.netMultiplier;
-            const margin = Math.max(0, Math.min(99, parseFloat(marginInput.value) || 30)) / 100;
-            
-            const unitNet = (listPrice || 0) * netMult;
-            const unitRetail = unitNet / (1 - margin);
-            const extList = (listPrice || 0) * slabQty;
-            const extNet = unitNet * slabQty;
-            const extRetail = unitRetail * slabQty;
-
-            let itemsHtml = `<div class="line-item ${isTBD ? 'pricing-tbd' : ''}">
-                <div class="item-details">
-                    <h4>${slabQty} x ${selectedItem.desc}</h4>
-                    <p><strong>SKU:</strong> ${selectedItem.sku} | <strong>Size:</strong> ${selectedItem.size} | <strong>Glass:</strong> ${selectedItem.glass}</p>
-                    <p><strong>Finish:</strong> ${finishLabel}</p>
-                    <p class="net-data" style="margin-top:0.5rem; color:var(--success);"><strong>Net Cost:</strong> ${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(unitNet)} <span class="price-sub" style="display:inline;">(List: ${formatCurrency(listPrice || 0)} &times; ${netMult})</span></p>
-                </div>
-                <div class="item-price">${isTBD ? '<span style="color:var(--warning)">TBD</span>' : formatCurrency(extRetail)}
-                    <span class="price-sub net-data" style="color:var(--success);">Ext Net: ${isTBD ? 'TBD' : formatCurrency(extNet)}</span>
-                    <span class="price-sub net-data">Margin: ${marginInput.value}%</span>
-                </div>
-            </div>`;
-
-            let totalList = extList, totalNet = extNet, totalRetail = extRetail;
-            
-            if (frameSelect.value !== 'none') {
-                const frame = VENDOR_CATALOG.prehungComponents[frameSelect.value];
-                const frameList = frame.listPrice + (jambSelect.value === '6_9_16' ? frame.jambUpcharge6916 : 0);
-                const frameNet = frameList * netMult;
-                const frameRetail = frameNet / (1 - margin);
-                
-                totalList += (frameList * qty);
-                totalNet += (frameNet * qty);
-                totalRetail += (frameRetail * qty);
-                
-                itemsHtml += `<div class="line-item">
-                    <div class="item-details">
-                        <h4>${qty} x ${frame.name}</h4>
-                        <p><strong>Jamb:</strong> ${jambSelect.options[jambSelect.selectedIndex].text}</p>
-                        <p class="net-data" style="margin-top:0.5rem; color:var(--success);"><strong>Net Cost:</strong> ${formatCurrency(frameNet)} <span class="price-sub" style="display:inline;">(List: ${formatCurrency(frameList)} &times; ${netMult})</span></p>
-                    </div>
-                    <div class="item-price">${formatCurrency(frameRetail * qty)}
-                        <span class="price-sub net-data" style="color:var(--success);">Ext Net: ${formatCurrency(frameNet * qty)}</span>
-                        <span class="price-sub net-data">Margin: ${marginInput.value}%</span>
-                    </div>
-                </div>`;
-            }
-            
-            lineItemsContainer.innerHTML = itemsHtml;
-            totalNetDisplay.innerText = formatCurrency(totalNet);
-            totalListDisplay.innerText = formatCurrency(totalList);
-            grandTotalDisplay.innerText = formatCurrency(totalRetail);
+        function addToQuote() {
+            if (!window.currentQuoteState) return;
+            const item = JSON.parse(JSON.stringify(window.currentQuoteState));
+            quoteItems.push(item);
+            updateCartUI();
         }
 
-        copyQuoteBtn.addEventListener('click', () => {
-            if (!selectedItem) return;
-            const qty = Math.max(1, parseInt(qtyInput.value) || 1);
-            const slabMult = (frameSelect.value === 'prehung_double') ? 2 : 1;
-            const text = `SIMPLYDOORS QUOTE SUMMARY\nDate: ${new Date().toLocaleDateString()}\n----------------------------------------\n` +
-                         `Quantity: ${qty} Unit(s) [Req. ${qty * slabMult} x Slabs]\nItem: ${selectedItem.desc} (${selectedItem.sku})\n` +
-                         `Finish: ${finishSelect.options[finishSelect.selectedIndex].text}${finishSelect.value === 'prefinished' ? ' ('+stainSelect.value+')' : ''}\n` +
-                         `----------------------------------------\nTOTAL ESTIMATE: ${grandTotalDisplay.innerText}`;
-            navigator.clipboard.writeText(text).then(() => {
-                const orig = copyQuoteBtn.innerHTML;
-                copyQuoteBtn.innerHTML = `<span>Copied!</span>`;
-                setTimeout(() => { copyQuoteBtn.innerHTML = orig; }, 2000);
+        function removeItem(index) {
+            quoteItems.splice(index, 1);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartContainer = document.getElementById('cart-container');
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            
+            document.getElementById('cart-count').innerText = quoteItems.length;
+
+            if(quoteItems.length === 0) {
+                cartContainer.classList.add('hidden');
+                document.getElementById('grandTotalRetail').innerText = "$0.00";
+                generateProposal();
+                return;
+            }
+            
+            cartContainer.classList.remove('hidden');
+            cartContainer.classList.add('flex');
+            let grandTotal = 0;
+            
+            quoteItems.forEach((item, index) => {
+                grandTotal += item.retailPrice;
+                cartItems.innerHTML += `
+                    <div class="flex justify-between items-center text-sm bg-slate-800 p-3 rounded shadow-sm border border-slate-700 mb-2">
+                        <div class="truncate pr-2">
+                            <div class="font-bold text-white">${item.sku}</div>
+                            <div class="text-xs text-slate-400 truncate w-48">${item.modelName}</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="font-mono font-bold text-emerald-400 mr-4">$${item.retailPrice.toFixed(2)}</span>
+                            <button onclick="removeItem(${index})" class="text-slate-500 hover:text-red-400 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                `;
             });
-        });
+            
+            document.getElementById('grandTotalRetail').innerText = `$${grandTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            generateProposal();
+        }
 
-        window.onload = initApp;
+        function generateProposal() {
+            document.getElementById('prop-quote-num').innerText = document.getElementById('quoteNumber').value || 'TBD';
+            document.getElementById('prop-rep').innerText = document.getElementById('salesRep').value;
+            
+            document.getElementById('prop-cust-name').innerText = document.getElementById('custName').value || 'Customer Name';
+            document.getElementById('prop-cust-phone').innerText = document.getElementById('custPhone').value || 'Phone Number';
+            document.getElementById('prop-cust-address').innerText = document.getElementById('custAddress').value || 'Address';
+            
+            // Set header dimensions based on first item, or N/A
+            const firstItem = quoteItems.length > 0 ? quoteItems[0] : window.currentQuoteState;
+            if (firstItem) {
+                document.getElementById('prop-unit-size').innerText = firstItem.unitStr;
+                document.getElementById('prop-ro').innerText = firstItem.roStr;
+            }
+            document.getElementById('prop-handing').innerText = document.getElementById('doorHanding').value;
+            
+            const tbody = document.getElementById('prop-tbody');
+            tbody.innerHTML = '';
+
+            let grandTotal = 0;
+
+            if (quoteItems.length === 0) {
+                if(window.currentQuoteState) {
+                    renderProposalRow(window.currentQuoteState, tbody);
+                    grandTotal = window.currentQuoteState.retailPrice;
+                }
+            } else {
+                quoteItems.forEach(item => {
+                    renderProposalRow(item, tbody);
+                    grandTotal += item.retailPrice;
+                });
+            }
+
+            document.getElementById('prop-total').innerText = `$${grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+        function renderProposalRow(state, tbody) {
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-slate-200";
+            
+            let html = `
+                <td class="py-5 px-3 align-top font-semibold text-slate-800">
+                    Hoelscher Premium Fiberglass Unit<br>
+                    <span class="text-xs font-normal text-slate-500">${state.sku}</span>
+                </td>
+                <td class="py-5 px-3 align-top text-slate-600 space-y-1">
+                    <p><strong>Model:</strong> ${state.collection} Grain - ${state.modelName}</p>
+                    <p><strong>Configuration:</strong> ${state.layout}</p>
+            `;
+            
+            if (state.glass !== 'Solid Panel') {
+                html += `<p><strong>Glass:</strong> ${state.glass}</p>`;
+            }
+            
+            html += `
+                    <p><strong>Finish:</strong> ${state.finish}</p>
+                    <p><strong>Jamb / Prehang:</strong> ${state.jambDesc}</p>
+            `;
+
+            if (state.addonsDesc) {
+                html += `<p><strong>Add-ons:</strong> ${state.addonsDesc}</p>`;
+            }
+            
+            if (state.laborDesc) {
+                html += `<p><strong>Labor:</strong> ${state.laborDesc}</p>`;
+            }
+
+            html += `
+                </td>
+                <td class="py-5 px-3 align-top text-right font-bold text-lg text-slate-900">
+                    $${state.retailPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+            `;
+            
+            tr.innerHTML = html;
+            tbody.appendChild(tr);
+        }
+
+        function scrollToProposal() {
+            const anchor = document.getElementById('proposal-anchor');
+            anchor.classList.remove('print-only'); 
+            anchor.scrollIntoView({ behavior: 'smooth' });
+        }
     </script>
 </body>
 </html>
