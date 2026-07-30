@@ -12,6 +12,9 @@
         .collection-card.active { border-color: #2563eb; background-color: #eff6ff; }
         .collection-card.active h4 { color: #1d4ed8; }
         
+        .tab-btn.active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
+        .tab-btn { border-bottom: 3px solid transparent; }
+        
         input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #cbd5e1; border-radius: 2px; }
@@ -24,7 +27,6 @@
         }
         .print-only { display: none; }
         
-        /* Custom scrollbar for the cart */
         .cart-scroll::-webkit-scrollbar { width: 4px; }
         .cart-scroll::-webkit-scrollbar-track { background: #1e293b; }
         .cart-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
@@ -38,13 +40,19 @@
             <div class="bg-blue-600 p-2 rounded text-xl"><i class="fas fa-door-open"></i></div>
             <div>
                 <h1 class="font-bold text-lg leading-tight">SimplyDoors</h1>
-                <p class="text-xs text-slate-400">Hoelscher 2025 Fiberglass Door Quoting System</p>
+                <p class="text-xs text-slate-400">Hoelscher Quoting System</p>
             </div>
         </div>
+        
+        <div class="hidden md:flex space-x-6 text-sm font-bold mt-1">
+            <button onclick="switchTab('quote-tab')" id="nav-quote" class="tab-btn active pb-3 px-2 text-slate-300 hover:text-white transition-colors"><i class="fas fa-calculator mr-1"></i> Quote Builder</button>
+            <button onclick="switchTab('settings-tab')" id="nav-settings" class="tab-btn pb-3 px-2 text-slate-400 hover:text-white transition-colors"><i class="fas fa-sliders-h mr-1"></i> Settings & Pricing</button>
+        </div>
+
         <div class="flex items-center space-x-4">
             <div class="flex items-center bg-slate-800 rounded px-3 py-1 border border-slate-700">
                 <i class="fas fa-user-circle text-slate-400 mr-2"></i>
-                <span class="text-xs text-slate-400 mr-2">Sales Rep:</span>
+                <span class="text-xs text-slate-400 mr-2">Rep:</span>
                 <select id="salesRep" class="bg-transparent text-sm font-semibold outline-none cursor-pointer text-white" onchange="generateProposal()">
                     <option value="Adem Atis">Adem Atis</option>
                     <option value="Cory Broyles">Cory Broyles</option>
@@ -52,13 +60,13 @@
                 </select>
             </div>
             <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-semibold transition-colors flex items-center">
-                <i class="fas fa-print mr-2"></i> Print / PDF Quote
+                <i class="fas fa-print mr-2"></i> Print / PDF
             </button>
         </div>
     </nav>
 
-    <!-- MAIN DASHBOARD -->
-    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
+    <!-- TAB 1: MAIN DASHBOARD -->
+    <main id="quote-tab" class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print block">
         
         <!-- LEFT COLUMN (CONFIGURATOR) -->
         <div class="lg:col-span-8 space-y-6">
@@ -212,7 +220,6 @@
                     <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Add-ons & Installation Labor</h2>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Add-On Container: Hidden unless specific doors selected -->
                     <div id="addOnContainer" style="display: none;">
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Decorative Grille / Speakeasy Mask</label>
                         <select id="addOns" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
@@ -223,9 +230,9 @@
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Installation & Removal Labor</label>
                         <select id="installLabor" onchange="runQuoteEngine()" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-sm">
                             <option value="0">None (Delivery Only)</option>
-                            <option value="450">Standard Single Door Install (+$450)</option>
-                            <option value="650">Single + Sidelites Install (+$650)</option>
-                            <option value="800">Double Door System Install (+$800)</option>
+                            <option value="std">Standard Single Door Install</option>
+                            <option value="sl">Single + Sidelites Install</option>
+                            <option value="dbl">Double Door System Install</option>
                         </select>
                     </div>
                 </div>
@@ -324,6 +331,75 @@
         </div>
     </main>
 
+    <!-- TAB 2: SETTINGS & PRICING -->
+    <main id="settings-tab" class="max-w-7xl mx-auto p-6 hidden no-print">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-4 mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Pricing Database & Settings</h2>
+                    <p class="text-sm text-slate-500">Modify global multipliers, labor rates, and base list prices below.</p>
+                </div>
+                <button onclick="saveSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded shadow font-bold transition-colors flex items-center">
+                    <i class="fas fa-save mr-2"></i> Save Pricing Settings
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Global Variables -->
+                <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 flex items-center"><i class="fas fa-globe text-blue-500 mr-2"></i> Global Multipliers</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Vendor Net Multiplier</label>
+                            <input type="number" step="0.01" id="set-multiplier" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none font-mono">
+                            <p class="text-xs text-slate-500 mt-1">Applied to list prices (Default: 0.48)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Labor & Add-ons -->
+                <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 lg:col-span-2">
+                    <h3 class="font-bold text-slate-700 mb-4 flex items-center"><i class="fas fa-hammer text-blue-500 mr-2"></i> Labor & Add-on Rates (Net $)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Standard Install</label>
+                            <div class="flex items-center"><span class="bg-slate-200 px-3 py-2 border border-r-0 border-slate-300 rounded-l text-sm text-slate-600">$</span><input type="number" id="set-labor-std" class="w-full p-2 border border-slate-300 rounded-r focus:border-blue-500 outline-none font-mono"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Sidelites Install</label>
+                            <div class="flex items-center"><span class="bg-slate-200 px-3 py-2 border border-r-0 border-slate-300 rounded-l text-sm text-slate-600">$</span><input type="number" id="set-labor-sl" class="w-full p-2 border border-slate-300 rounded-r focus:border-blue-500 outline-none font-mono"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Double Door Install</label>
+                            <div class="flex items-center"><span class="bg-slate-200 px-3 py-2 border border-r-0 border-slate-300 rounded-l text-sm text-slate-600">$</span><input type="number" id="set-labor-dbl" class="w-full p-2 border border-slate-300 rounded-r focus:border-blue-500 outline-none font-mono"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Speakeasy Masks (List $)</label>
+                            <div class="flex items-center"><span class="bg-slate-200 px-3 py-2 border border-r-0 border-slate-300 rounded-l text-sm text-slate-600">$</span><input type="number" id="set-addon-mask" class="w-full p-2 border border-slate-300 rounded-r focus:border-blue-500 outline-none font-mono"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Wrought Iron Grilles (List $)</label>
+                            <div class="flex items-center"><span class="bg-slate-200 px-3 py-2 border border-r-0 border-slate-300 rounded-l text-sm text-slate-600">$</span><input type="number" id="set-addon-grille" class="w-full p-2 border border-slate-300 rounded-r focus:border-blue-500 outline-none font-mono"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-8">
+                <h3 class="text-xl font-bold text-slate-800 mb-6"><i class="fas fa-list-alt text-blue-500 mr-2"></i> Door Model Base List Prices</h3>
+                <div id="settings-models-container" class="space-y-8">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-6 py-3 rounded shadow-xl font-semibold transition-opacity duration-300 opacity-0 pointer-events-none z-50">
+        <i class="fas fa-check-circle text-emerald-400 mr-2"></i> Settings Saved Successfully!
+    </div>
+
     <!-- PRINT PROPOSAL TEMPLATE -->
     <div id="proposal-anchor" class="max-w-4xl mx-auto p-6 mb-12 print-only">
         <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-10 proposal-card">
@@ -383,56 +459,170 @@
     </div>
 
     <script>
-        const NET_MULTIPLIER = 0.48;
-        let quoteItems = []; // Array to store multiple doors/items
-
-        const modelsDB = {
-            "Mahogany": [
-                { "name": "Contemporary 1 Lite Vertical", "page": "4", "price": 1728.0, "sizes": ["3080"], "glass": ["Clear Low E", "Reeded", "Sandblast w/1 Clear Border", "Satin"] },
-                { "name": "Contemporary 3 Lite", "page": "4", "price": 1485.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Satin"] },
-                { "name": "Contemporary 4 Lite", "page": "5", "price": 1485.0, "sizes": ["3068"], "glass": ["Clear Low E", "Rain", "Reeded", "Sandblast w/1\" Clear Border", "Satin"] },
-                { "name": "Contemporary 5 Lite", "page": "5", "price": 1728.0, "sizes": ["3080", "3680"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Sandblast w/1\" Border", "Satin"] },
-                { "name": "Contemporary 5 Lite Horizontal", "page": "6", "price": 1485.0, "sizes": ["3068"], "glass": ["Clear Low E", "Rain", "Sandblast w/1\" Clear Border", "Satin"] },
-                { "name": "Contemporary 6 Lite Horizontal", "page": "6", "price": 1728.0, "sizes": ["3080"], "glass": ["Clear Low E", "Rain", "Sandblast w/1\" Clear Border", "Satin"] },
-                { "name": "3/4 Lite 1 Panel", "page": "7", "price": 1165.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Satin"] },
-                { "name": "4 Lite TDL 1 Panel", "page": "8", "price": 1324.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Bevel Low E", "Clear Low E", "Flemish", "Rain"] },
-                { "name": "6 Lite TDL 1 Panel", "page": "8", "price": 1324.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080", "3680"], "glass": ["Clear Bevel Low E", "Clear Low E", "Flemish", "Rain"] },
-                { "name": "2 Panel Square", "page": "9", "price": 630.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
-                { "name": "2 Panel Arch, V-Grooved", "page": "10", "price": 630.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
-                { "name": "Craftsman 6 Lite 2 Panel Shaker", "page": "10", "price": 1252.0, "sizes": ["3068", "3080"], "glass": ["Clear Bevel Low E", "Flemish", "Rain"] },
-                { "name": "2 Panel Arch V-Grooved w/ Speakeasy", "page": "11", "price": 953.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Wood"] },
-                { "name": "Contemporary Full Lite Sidelite", "page": "12", "price": 725.0, "sizes": ["1268", "1280"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Satin"] }
-            ],
-            "Oak": [
-                { "name": "6 Panel", "page": "9", "price": 440.0, "sizes": ["3068", "3080"], "glass": ["nan"] }
-            ],
-            "Smooth": [
-                { "name": "Craftsman 3 Panel Shaker", "page": "14", "price": 403.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
-                { "name": "Craftsman 1 Lite 2 Panel Shaker", "page": "14", "price": 600.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] },
-                { "name": "Craftsman Flat Panel", "page": "15", "price": 610.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] },
-                { "name": "Half Lite 2 Panel", "page": "15", "price": 685.0, "sizes": ["2868"], "glass": ["Clear Low E"] },
-                { "name": "2 Panel Shaker", "page": "16", "price": 403.0, "sizes": ["2868", "2880", "3068", "3080"], "glass": ["nan"] },
-                { "name": "2 Panel Raised Panel", "page": "16", "price": 339.0, "sizes": ["2868", "3068", "3080"], "glass": ["nan"] },
-                { "name": "1 Panel Flat Panel", "page": "17", "price": 608.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
-                { "name": "6 Panel", "page": "17", "price": 339.0, "sizes": ["2868", "2880", "3068", "3080"], "glass": ["nan"] },
-                { "name": "Full Lite", "page": "18", "price": 608.0, "sizes": ["2068", "2080", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E", "Translucent"] },
-                { "name": "Full Lite with Mini Blind", "page": "18", "price": 923.0, "sizes": ["2068", "2080", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E"] },
-                { "name": "3/4 Lite 1 Panel", "page": "19", "price": 685.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Translucent"] },
-                { "name": "3/4 Lite 1 Panel with Mini Blind", "page": "19", "price": 996.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E"] },
-                { "name": "Flush", "page": "19", "price": 370.0, "sizes": ["2068", "2080", "21068", "21080", "2468", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["nan"] },
-                { "name": "3/4 Lite 1 Panel Sidelite", "page": "20", "price": 581.0, "sizes": ["1068", "1080", "1268", "1280"], "glass": ["Clear Low E"] },
-                { "name": "Full Lite Sidelite", "page": "20", "price": 573.0, "sizes": ["1068", "1080", "1268", "1280"], "glass": ["Clear Low E"] }
-            ],
-            "Fir": [
-                { "name": "Craftsman 3 Panel Shaker", "page": "14", "price": 450.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
-                { "name": "Craftsman 1 Lite 2 Panel Shaker", "page": "14", "price": 660.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E"] },
-                { "name": "Craftsman Flat Panel", "page": "15", "price": 671.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] }
-            ]
+        // Default Master Configuration Data
+        const defaultSettings = {
+            multiplier: 0.48,
+            labor: { std: 450, sl: 650, dbl: 800 },
+            addons: { maskList: 194, grilleList: 440 },
+            modelsDB: {
+                "Mahogany": [
+                    { "name": "Contemporary 1 Lite Vertical", "page": "4", "price": 1728.0, "sizes": ["3080"], "glass": ["Clear Low E", "Reeded", "Sandblast w/1 Clear Border", "Satin"] },
+                    { "name": "Contemporary 3 Lite", "page": "4", "price": 1485.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Satin"] },
+                    { "name": "Contemporary 4 Lite", "page": "5", "price": 1485.0, "sizes": ["3068"], "glass": ["Clear Low E", "Rain", "Reeded", "Sandblast w/1\" Clear Border", "Satin"] },
+                    { "name": "Contemporary 5 Lite", "page": "5", "price": 1728.0, "sizes": ["3080", "3680"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Sandblast w/1\" Border", "Satin"] },
+                    { "name": "Contemporary 5 Lite Horizontal", "page": "6", "price": 1485.0, "sizes": ["3068"], "glass": ["Clear Low E", "Rain", "Sandblast w/1\" Clear Border", "Satin"] },
+                    { "name": "Contemporary 6 Lite Horizontal", "page": "6", "price": 1728.0, "sizes": ["3080"], "glass": ["Clear Low E", "Rain", "Sandblast w/1\" Clear Border", "Satin"] },
+                    { "name": "3/4 Lite 1 Panel", "page": "7", "price": 1165.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Satin"] },
+                    { "name": "4 Lite TDL 1 Panel", "page": "8", "price": 1324.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Bevel Low E", "Clear Low E", "Flemish", "Rain"] },
+                    { "name": "6 Lite TDL 1 Panel", "page": "8", "price": 1324.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080", "3680"], "glass": ["Clear Bevel Low E", "Clear Low E", "Flemish", "Rain"] },
+                    { "name": "2 Panel Square", "page": "9", "price": 630.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                    { "name": "2 Panel Arch, V-Grooved", "page": "10", "price": 630.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                    { "name": "Craftsman 6 Lite 2 Panel Shaker", "page": "10", "price": 1252.0, "sizes": ["3068", "3080"], "glass": ["Clear Bevel Low E", "Flemish", "Rain"] },
+                    { "name": "2 Panel Arch V-Grooved w/ Speakeasy", "page": "11", "price": 953.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Wood"] },
+                    { "name": "Contemporary Full Lite Sidelite", "page": "12", "price": 725.0, "sizes": ["1268", "1280"], "glass": ["Clear Low E", "Flemish", "Rain", "Reeded", "Satin"] }
+                ],
+                "Oak": [
+                    { "name": "6 Panel", "page": "9", "price": 440.0, "sizes": ["3068", "3080"], "glass": ["nan"] }
+                ],
+                "Smooth": [
+                    { "name": "Craftsman 3 Panel Shaker", "page": "14", "price": 403.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                    { "name": "Craftsman 1 Lite 2 Panel Shaker", "page": "14", "price": 600.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] },
+                    { "name": "Craftsman Flat Panel", "page": "15", "price": 610.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] },
+                    { "name": "Half Lite 2 Panel", "page": "15", "price": 685.0, "sizes": ["2868"], "glass": ["Clear Low E"] },
+                    { "name": "2 Panel Shaker", "page": "16", "price": 403.0, "sizes": ["2868", "2880", "3068", "3080"], "glass": ["nan"] },
+                    { "name": "2 Panel Raised Panel", "page": "16", "price": 339.0, "sizes": ["2868", "3068", "3080"], "glass": ["nan"] },
+                    { "name": "1 Panel Flat Panel", "page": "17", "price": 608.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                    { "name": "6 Panel", "page": "17", "price": 339.0, "sizes": ["2868", "2880", "3068", "3080"], "glass": ["nan"] },
+                    { "name": "Full Lite", "page": "18", "price": 608.0, "sizes": ["2068", "2080", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E", "Translucent"] },
+                    { "name": "Full Lite with Mini Blind", "page": "18", "price": 923.0, "sizes": ["2068", "2080", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E"] },
+                    { "name": "3/4 Lite 1 Panel", "page": "19", "price": 685.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E", "Flemish", "Rain", "Translucent"] },
+                    { "name": "3/4 Lite 1 Panel with Mini Blind", "page": "19", "price": 996.0, "sizes": ["2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["Clear Low E"] },
+                    { "name": "Flush", "page": "19", "price": 370.0, "sizes": ["2068", "2080", "21068", "21080", "2468", "2668", "2680", "2868", "2880", "3068", "3080"], "glass": ["nan"] },
+                    { "name": "3/4 Lite 1 Panel Sidelite", "page": "20", "price": 581.0, "sizes": ["1068", "1080", "1268", "1280"], "glass": ["Clear Low E"] },
+                    { "name": "Full Lite Sidelite", "page": "20", "price": 573.0, "sizes": ["1068", "1080", "1268", "1280"], "glass": ["Clear Low E"] }
+                ],
+                "Fir": [
+                    { "name": "Craftsman 3 Panel Shaker", "page": "14", "price": 450.0, "sizes": ["3068", "3080"], "glass": ["nan"] },
+                    { "name": "Craftsman 1 Lite 2 Panel Shaker", "page": "14", "price": 660.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E"] },
+                    { "name": "Craftsman Flat Panel", "page": "15", "price": 671.0, "sizes": ["3068", "3080"], "glass": ["Clear Low E", "Rain"] }
+                ]
+            }
         };
 
+        // Application State
+        let appSettings = JSON.parse(JSON.stringify(defaultSettings));
+        let quoteItems = [];
         let currentCollection = 'Mahogany';
         let currentlySelectedModel = null;
 
+        // Init Flow
+        window.onload = () => {
+            loadSettings();
+            setCollection('Mahogany');
+            document.getElementById('prop-date').innerText = new Date().toISOString().split('T')[0];
+            updateLaborDropdowns();
+        };
+
+        function loadSettings() {
+            const saved = localStorage.getItem('simplyDoorsPricingDB');
+            if (saved) {
+                appSettings = JSON.parse(saved);
+            }
+            renderSettingsUI();
+        }
+
+        function saveSettings() {
+            // Read Globals
+            appSettings.multiplier = parseFloat(document.getElementById('set-multiplier').value);
+            appSettings.labor.std = parseFloat(document.getElementById('set-labor-std').value);
+            appSettings.labor.sl = parseFloat(document.getElementById('set-labor-sl').value);
+            appSettings.labor.dbl = parseFloat(document.getElementById('set-labor-dbl').value);
+            appSettings.addons.maskList = parseFloat(document.getElementById('set-addon-mask').value);
+            appSettings.addons.grilleList = parseFloat(document.getElementById('set-addon-grille').value);
+
+            // Read Model Prices
+            for (const col in appSettings.modelsDB) {
+                appSettings.modelsDB[col].forEach((model, index) => {
+                    const el = document.getElementById(`price-${col.replace(/\s+/g,'')}-${index}`);
+                    if(el) {
+                        model.price = parseFloat(el.value);
+                    }
+                });
+            }
+
+            localStorage.setItem('simplyDoorsPricingDB', JSON.stringify(appSettings));
+            
+            // Show toast
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0');
+            setTimeout(() => { toast.classList.add('opacity-0'); }, 3000);
+
+            // Refresh UI
+            updateLaborDropdowns();
+            populateOptions(); 
+        }
+
+        function renderSettingsUI() {
+            document.getElementById('set-multiplier').value = appSettings.multiplier;
+            document.getElementById('set-labor-std').value = appSettings.labor.std;
+            document.getElementById('set-labor-sl').value = appSettings.labor.sl;
+            document.getElementById('set-labor-dbl').value = appSettings.labor.dbl;
+            document.getElementById('set-addon-mask').value = appSettings.addons.maskList;
+            document.getElementById('set-addon-grille').value = appSettings.addons.grilleList;
+
+            const container = document.getElementById('settings-models-container');
+            container.innerHTML = '';
+            
+            for (const [collection, models] of Object.entries(appSettings.modelsDB)) {
+                let html = `<div class="mb-6"><h4 class="font-bold text-slate-800 border-b pb-2 mb-3 uppercase tracking-wider text-sm">${collection} Collection</h4><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">`;
+                
+                models.forEach((model, index) => {
+                    const safeCol = collection.replace(/\s+/g,'');
+                    html += `
+                    <div class="bg-white p-3 rounded border border-slate-200 flex flex-col justify-between shadow-sm">
+                        <label class="text-xs font-semibold text-slate-600 mb-2 leading-tight">${model.name}</label>
+                        <div class="flex items-center">
+                            <span class="bg-slate-100 px-3 py-2 border border-r-0 border-slate-300 rounded-l text-sm text-slate-500 font-bold">$</span>
+                            <input type="number" id="price-${safeCol}-${index}" value="${model.price}" class="w-full p-2 border border-slate-300 rounded-r focus:border-blue-500 outline-none text-sm font-mono font-semibold text-slate-800">
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            }
+        }
+
+        function updateLaborDropdowns() {
+            const laborSelect = document.getElementById('installLabor');
+            laborSelect.innerHTML = `
+                <option value="0">None (Delivery Only)</option>
+                <option value="std">Standard Single Door Install (+$${appSettings.labor.std})</option>
+                <option value="sl">Single + Sidelites Install (+$${appSettings.labor.sl})</option>
+                <option value="dbl">Double Door System Install (+$${appSettings.labor.dbl})</option>
+            `;
+        }
+
+        function switchTab(tabId) {
+            document.getElementById('quote-tab').classList.add('hidden');
+            document.getElementById('settings-tab').classList.add('hidden');
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.getElementById('nav-quote').classList.remove('active', 'text-slate-300');
+            document.getElementById('nav-quote').classList.add('text-slate-400');
+            document.getElementById('nav-settings').classList.remove('active', 'text-slate-300');
+            document.getElementById('nav-settings').classList.add('text-slate-400');
+
+            if (tabId === 'quote-tab') {
+                document.getElementById('nav-quote').classList.add('active', 'text-slate-300');
+                document.getElementById('nav-quote').classList.remove('text-slate-400');
+            } else {
+                document.getElementById('nav-settings').classList.add('active', 'text-slate-300');
+                document.getElementById('nav-settings').classList.remove('text-slate-400');
+                renderSettingsUI(); // Ensure inputs match memory on view
+            }
+        }
+
+        // Quote Engine & UI Logic
         function decodeSize(code) {
             const map = {
                 '1068': { w: 12, h: 80, label: '1\'0" x 6\'8"' },
@@ -455,11 +645,6 @@
             return map[code] || { w: 36, h: 80, label: code };
         }
 
-        window.onload = () => {
-            setCollection('Mahogany');
-            document.getElementById('prop-date').innerText = new Date().toISOString().split('T')[0];
-        };
-
         function setCollection(collection) {
             currentCollection = collection;
             
@@ -471,7 +656,7 @@
             const modelSelect = document.getElementById('doorModel');
             modelSelect.innerHTML = '';
             
-            modelsDB[collection].forEach((model, index) => {
+            appSettings.modelsDB[collection].forEach((model, index) => {
                 const opt = document.createElement('option');
                 opt.value = index;
                 const pageLabel = model.page ? ` (Pg. ${model.page})` : '';
@@ -484,7 +669,7 @@
 
         function populateOptions() {
             const modelIndex = document.getElementById('doorModel').value;
-            currentlySelectedModel = modelsDB[currentCollection][modelIndex];
+            currentlySelectedModel = appSettings.modelsDB[currentCollection][modelIndex];
             
             // 1. Setup Sizes
             const sizeSelect = document.getElementById('doorSize');
@@ -526,14 +711,14 @@
             
             if (currentlySelectedModel.name === "2 Panel Arch V-Grooved w/ Speakeasy") {
                 addOnsSelect.innerHTML += `
-                    <option value="194">Standard Iron Mask (+$194 List)</option>
-                    <option value="194">Balfour Iron Mask (+$194 List)</option>
-                    <option value="194">Windsor Iron Mask (+$194 List)</option>
+                    <option value="maskList">Standard Iron Mask (+$${appSettings.addons.maskList} List)</option>
+                    <option value="maskList">Balfour Iron Mask (+$${appSettings.addons.maskList} List)</option>
+                    <option value="maskList">Windsor Iron Mask (+$${appSettings.addons.maskList} List)</option>
                 `;
                 addOnContainer.style.display = 'block';
             } else if (currentlySelectedModel.name === "3/4 Lite 1 Panel") {
                 addOnsSelect.innerHTML += `
-                    <option value="440">Full Wrought Iron Grille (+$440 List)</option>
+                    <option value="grilleList">Full Wrought Iron Grille (+$${appSettings.addons.grilleList} List)</option>
                 `;
                 addOnContainer.style.display = 'block';
             } else {
@@ -558,8 +743,8 @@
 
         function runQuoteEngine() {
             if (!currentlySelectedModel) return;
-            const baseListPrice = currentlySelectedModel.price;
             
+            const baseListPrice = currentlySelectedModel.price;
             const sizeCode = document.getElementById('doorSize').value;
             const dims = decodeSize(sizeCode);
             const nomW = dims.w;
@@ -579,23 +764,23 @@
             let addOnsNet = 0;
             let addonsDesc = '';
             if (document.getElementById('addOnContainer').style.display !== 'none' && addOnsSelect.value !== "0") {
-                addOnsNet = parseFloat(addOnsSelect.value) * NET_MULTIPLIER;
-                addonsDesc = addOnsSelect.options[addOnsSelect.selectedIndex].text;
+                const addOnListKey = addOnsSelect.value; 
+                addOnsNet = parseFloat(appSettings.addons[addOnListKey]) * appSettings.multiplier;
+                addonsDesc = addOnsSelect.options[addOnsSelect.selectedIndex].text.split(' (+')[0];
             }
                             
             const laborSelect = document.getElementById('installLabor');
             let laborNet = 0;
             let laborDesc = '';
             if(laborSelect.value !== "0") {
-                laborNet = parseFloat(laborSelect.value);
-                laborDesc = laborSelect.options[laborSelect.selectedIndex].text;
+                laborNet = parseFloat(appSettings.labor[laborSelect.value]);
+                laborDesc = laborSelect.options[laborSelect.selectedIndex].text.split(' (+')[0];
             }
 
             const alertBox = document.getElementById('prehangAlert');
             let prehangCost = 0;
             let jambDesc = '';
 
-            // Handle Slab Only Override
             if (isSlabOnly) {
                 alertBox.style.display = 'none';
                 prehangCost = 0;
@@ -619,17 +804,17 @@
                     alertBox.innerHTML = `<strong><i class="fas fa-truck mr-2"></i> VENDOR PREHANG</strong><br>Prefinished doors are assembled directly by Hoelscher using matching composite frames.`;
                     
                     let vendorListFrame = isDouble ? 800 : 450;
-                    prehangCost = vendorListFrame * NET_MULTIPLIER;
+                    prehangCost = vendorListFrame * appSettings.multiplier;
                     jambDesc = `Vendor Composite Frame (${jamb}")`;
                 }
             }
 
             let slabListTotal = isDouble ? baseListPrice * 2 : baseListPrice;
-            const slabNet = slabListTotal * NET_MULTIPLIER;
+            const slabNet = slabListTotal * appSettings.multiplier;
             
             let sideliteNet = 0;
-            if (layout === 'Single + 1 SL') sideliteNet = 725 * NET_MULTIPLIER;
-            if (layout === 'Single + 2 SL') sideliteNet = 1450 * NET_MULTIPLIER;
+            if (layout === 'Single + 1 SL') sideliteNet = 725 * appSettings.multiplier;
+            if (layout === 'Single + 2 SL') sideliteNet = 1450 * appSettings.multiplier;
 
             const totalDealerCost = slabNet + sideliteNet + prehangCost + addOnsNet + laborNet;
             const retailPrice = totalDealerCost / (1 - margin);
@@ -658,7 +843,7 @@
             if (isSlabOnly) {
                 let slabW = nomW - 0.25;
                 let slabH = nomH - 0.75;
-                if (isDouble) slabW = (nomW * 2) - 0.25; // standard double slab calc 
+                if (isDouble) slabW = (nomW * 2) - 0.25;
                 
                 unitStr = `${formatDimStr(slabW)} x ${formatDimStr(slabH)} (Slab Size)`;
                 roStr = "N/A (Slab Only)";
@@ -680,7 +865,7 @@
             document.getElementById('sumUnitSize').innerText = unitStr;
             document.getElementById('sumRO').innerText = roStr;
 
-            const glass = document.getElementById('doorGlass').value;
+            const glass = document.getElementById('glassContainer').style.display !== 'none' ? document.getElementById('doorGlass').value : 'Solid Panel';
             const sku = `SD-${currentCollection.substring(0,3).toUpperCase()}-${sizeCode}-${isDouble ? 'DBL' : 'SGL'}`;
             document.getElementById('sku-display').innerText = `SKU: ${sku}`;
 
@@ -750,7 +935,6 @@
             document.getElementById('prop-cust-phone').innerText = document.getElementById('custPhone').value || 'Phone Number';
             document.getElementById('prop-cust-address').innerText = document.getElementById('custAddress').value || 'Address';
             
-            // Set header dimensions based on first item, or N/A
             const firstItem = quoteItems.length > 0 ? quoteItems[0] : window.currentQuoteState;
             if (firstItem) {
                 document.getElementById('prop-unit-size').innerText = firstItem.unitStr;
